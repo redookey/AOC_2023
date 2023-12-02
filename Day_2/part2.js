@@ -19,11 +19,7 @@ function getGameScore(game) {
     const sets = game.slice(game.indexOf(':') + 2).split('; ');
     let allZero = true;
     let powerOfColors = 1;
-    let minRgb = {  
-        r: 0,
-        g: 0,
-        b: 0
-    };
+    let minRgb = { r: 0, g: 0, b: 0 };
 
     for(const set of sets) {   
         let currentRgb = getRbgValue(set);
@@ -41,11 +37,7 @@ function getGameScore(game) {
 
 function getRbgValue(set) {
     let draws = set.split(', ');
-    let rgb = {  
-        r: 0,
-        g: 0,
-        b: 0
-    };
+    let rgb = { r: 0, g: 0, b: 0 };
 
     for(const draw of draws) {
         switch(true) {

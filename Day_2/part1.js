@@ -30,11 +30,7 @@ function isGameValid(game) {
 
 function getRbgValue(set) {
     let draws = set.split(', ');
-    let rgb = {
-        r: 0,
-        g: 0,
-        b: 0
-    };
+    let rgb = { r: 0, g: 0, b: 0 };
 
     for(const draw of draws) {
         switch(true) {
@@ -56,11 +52,7 @@ function getRbgValue(set) {
 }
 
 function combinationIsPossible(rgb) {
-    const maxRgb = {
-        r: 12,
-        g: 13,
-        b: 14
-    };
+    const maxRgb = { r: 12, g: 13, b: 14 };
 
     for(const color in rgb) {
         if (rgb[color] > maxRgb[color]) { return false; }
