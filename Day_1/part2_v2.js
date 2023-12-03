@@ -22,7 +22,7 @@ function calculateLine(calibrationLine) {
 }
 
 function getFirstDigit(calibrationLine) {
-    for(let position = 0; position <= calibrationLine.length; position++) {
+    for(let position = 0; position < calibrationLine.length; position++) {
         let digit = getDigit(calibrationLine, position);
         if (digit) { return digit; }
     }
