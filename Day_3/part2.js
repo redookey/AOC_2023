@@ -27,54 +27,78 @@ function getSumOfGearRatios(lines) {
 }
 
 function getLineTotal(currentLine, aboveLine, belowLine) {
-    let partNumber = { value: '', start: 0, end: 0 };
     let lineTotal = 0;
-    for(let position = 0; position < currentLine.length; position++) {
-        if(isGear(currentLine[position])) {
-            
+    for(let charPosition = 0; charPosition < currentLine.length; charPosition++) {
+        let partNumbers = [];
+        if(isGear(currentLine[charPosition])) {
+            partNumbers = partNumbers.concat(getCurrLinePartNumbers(currentLine, charPosition));
+            partNumbers = partNumbers.concat(getAdjLinePartNumbers(aboveLine, charPosition));
+            partNumbers = partNumbers.concat(getAdjLinePartNumbers(belowLine, charPosition));
+            if (partNumbers.length === 2) { lineTotal += partNumbers[0] * partNumbers[1]; }
         }
     }
-        // if (isDigit(currentLine[position])) {
-        //     partNumber.start = position;
-        //     partNumber.value = getNumber(currentLine, position);
-        //     partNumber.end = position + partNumber.value.length - 1;
-            
-        //     lineTotal += getNumberIfValid(partNumber, currentLine, aboveLine, belowLine);
-        //     position = partNumber.end + 1;
-        // }
     return lineTotal;
+}
+
+function getCurrLinePartNumbers(currLine, gearPosition) {
+    let partNumbers = [];
+    let partNumber = 0;
+
+    if (isDigit(currLine[gearPosition - 1])) {
+         partNumbers.push(getNumberOnLeftSide(currLine, gearPosition - 1))
+    }
+    if (isDigit(currLine[gearPosition + 1])) {
+        partNumbers.push(getNumberOnRightSide(currLine, gearPosition + 1))
+    }
+    return partNumbers;
+}
+
+function getAdjLinePartNumbers(adjLine, gearPosition) {
+    let partNumbers = [];
+
+    if (isDigit(adjLine[gearPosition])) {
+        partNumbers.push(getNumberOnAdjLine(adjLine, gearPosition));
+        return partNumbers;
+    }
+    if (isDigit(adjLine[gearPosition - 1])) { partNumbers.push(getNumberOnLeftSide(adjLine, gearPosition - 1)); }
+    if (isDigit(adjLine[gearPosition + 1])) { partNumbers.push(getNumberOnRightSide(adjLine, gearPosition + 1)); }
+    return partNumbers;
+}
+
+function getNumberOnLeftSide(line, numberPosition) {
+    let partNumber = '';
+
+    for(let i = numberPosition; isDigit(line[i]); i--) {
+        partNumber = line[i] + partNumber; //add to the beginning
+    }
+    return parseInt(partNumber);
+}
+
+function getNumberOnRightSide(line, numberPosition) {
+    let partNumber = '';
+
+    for(let i = numberPosition; isDigit(line[i]); i++) {
+        partNumber += line[i];
+    }
+    return parseInt(partNumber);
+}
+
+function getNumberOnAdjLine(adjLine, numberPosition) {
+    let firstPart = '';
+    let secondPart = '';
+
+    for(let i = numberPosition; isDigit(adjLine[i]); i--) {
+        firstPart = adjLine[i] + firstPart;
+    }
+    for(let i = numberPosition; isDigit(adjLine[i]); i++) {
+        secondPart += adjLine[i];
+    }
+
+    return parseInt(firstPart.concat(secondPart.slice(1)));
 }
 
 function isGear(char) {
     return (char === '*');
-}
-
-function getNumber(str, position) {
-    let result = '';
-    for(let i = position; isDigit(str[i]); i++) {
-        result += str[i];
-    }
-    return result;
-}
-
-function getNumberIfValid(partNumber, currentLine, aboveLine, belowLine) {
-    if (symbolOnCurrentLine(partNumber, currentLine)) { return parseInt(partNumber.value); }
-    if (symbolOnAdjacentLine(partNumber, aboveLine)) { return parseInt(partNumber.value); }
-    if (symbolOnAdjacentLine(partNumber, belowLine)) { return parseInt(partNumber.value); }
-    return 0;
-}
-
-function symbolOnCurrentLine(partNumber, currentLine) {
-    if (isSymbol(currentLine[partNumber.start - 1])) { return true; }
-    if (isSymbol(currentLine[partNumber.end + 1])) { return true; }
-    return false;
-}
-
-function symbolOnAdjacentLine(partNumber, adjacentLine) {
-    for(let position = partNumber.start - 1; position <= partNumber.end + 1; position++) {
-        if (isSymbol(adjacentLine[position])) { return true; }
-    }
-    return false;
 }
 
 function isDigit(char) {
@@ -83,15 +107,6 @@ function isDigit(char) {
         if(char == digit) { return true; } 
     }
     return false;
-}
-
-function isSymbol(char) {
-    if(!char || isDot(char)) { return false; }
-    return true;
-}
-
-function isDot(char) {
-    return (char === '.');
 }
 
 main();
