@@ -29,7 +29,7 @@ function getFirstDigit(calibrationLine) {
 }
 
 function getLastDigit(calibrationLine) {
-    for(let position = calibrationLine.length; position >= 0; position--) {
+    for(let position = calibrationLine.length - 1; position >= 0; position--) {
         let digit = getDigit(calibrationLine, position);
         if (digit) { return digit; }
     }
