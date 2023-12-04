@@ -71,6 +71,7 @@ function digitFilter(str) {
 }
 
 function isDigit(char) {
+    //return char >= '0' && char <= '9';
     const digits = '0123456789';
     for(const digit of digits) {
         if(char == digit) {

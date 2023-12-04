@@ -21,6 +21,7 @@ function getTotal(lines) {
             if (winningNumbers.includes(myNumbers[number])) {
                 if (lineTotal === 0) { lineTotal = 1; }
                 else { lineTotal *= 2; }
+                //lineTotal = lineTotal !== 0 ? lineTotal * 2 : 1;
             }
         }
         totalScore += lineTotal;
