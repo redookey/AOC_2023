@@ -16,7 +16,7 @@ function guessTheSum(inputLines) {
 }
 
 function getGameScore(game) {
-    const sets = game.slice(game.indexOf(':') + 2).split('; ');
+    const sets = game.slice(game.indexOf(':') + 2).split('; '); //[0]upgradeReadability: instead of using ["; " or + 2] use [';' and + 1](and use .trim instead)
     let allZero = true;
     let powerOfColors = 1;
     let minRgb = { r: 0, g: 0, b: 0 };

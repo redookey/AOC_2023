@@ -20,7 +20,7 @@ function guessTheSum(inputLines) {
 }
 
 function isGameValid(game) {
-    const sets = game.slice(game.indexOf(':') + 2).split('; ');
+    const sets = game.slice(game.indexOf(':') + 2).split('; '); //[0]
     for(const set of sets) {   
         let rgb = getRbgValue(set);
         if (!combinationIsPossible(rgb)) { return false; }
