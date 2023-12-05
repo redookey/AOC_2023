@@ -26,14 +26,19 @@ class Map {
 function newFunction(sections) {
     const seedsDeclaration = 'seeds: ';
     const seeds = sections.shift().slice(seedsDeclaration.length).trim().split(' ');
-    let maps = [];
+    const maps = formatMaps(sections);
+}
 
-    for(const section of sections) {
-        let sectionLines = section.split('\r\n');
+function formatMaps(mapsToFormat) {
+    let maps = [];
+    for(const mapToFormat of mapsToFormat) {
+        let sectionLines = mapToFormat.split('\r\n');
         const declaration = sectionLines.shift();
         sectionLines.forEach((value, index, array) => array[index] = value.split(' '));
         maps.push(new Map(declaration, sectionLines));
     }
+
+    return maps;
 }
 
 main();
