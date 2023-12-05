@@ -10,8 +10,23 @@ function main() {
 }
 
 function getScratchcardsAmount(lines) {
-    let cards = [];
+    let cards = fillCardDeck(lines);
     let scratchcardsAmount = 0;
+    
+    for (const card of cards) {
+        calculateCardMatches(card);
+        for(let i = card.noOfCopies; i >= 0; i--) {
+            for(let i = card.matches; i > 0; i--) {
+                cards.find(c => c.id === card.id + i).noOfCopies++;
+            }
+        }
+        scratchcardsAmount += card.noOfCopies + 1;
+    }
+    return scratchcardsAmount;
+}
+
+function fillCardDeck(lines) {
+    let cards = [];
     for(const line of lines) {
         const numberGroups = line.slice(line.indexOf(':') + 1).split('|');
         let card = {
@@ -23,20 +38,13 @@ function getScratchcardsAmount(lines) {
         };
         cards.push(card);
     }
+    return cards;
+}
 
-    for(const card of cards) {
-        for(const number of card.myNumbers) {
-            if (card.winningNumbers.includes(number)) { card.matches++; }
-        }
-
-        for(let i = card.noOfCopies; i >= 0; i--) {
-            for(let i = card.matches; i > 0; i--) {
-                cards.find(c => c.id === card.id + i).noOfCopies++;
-            }
-        }
-        scratchcardsAmount += card.noOfCopies + 1;
+function calculateCardMatches(card) {
+    for(const number of card.myNumbers) {
+        if (card.winningNumbers.includes(number)) { card.matches++; }
     }
-    return scratchcardsAmount;
 }
 
 main();
