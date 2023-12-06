@@ -60,7 +60,7 @@ function getNearestLocation(sections) {
     let locations = [];
 
     for(let i = 0; i < seedsCoordinates.length; i = i + 2) {
-        seeds.push(new Seed(parseInt(seedsCoordinates[i]), parseInt(seedsCoordinates[i + 1])).getSeeds());
+        seeds.push(...new Seed(parseInt(seedsCoordinates[i]), parseInt(seedsCoordinates[i + 1])).getSeeds());
     }
 
     for(const seed of seeds) {
