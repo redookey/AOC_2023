@@ -9,6 +9,7 @@ function main() {
     console.log(solvePuzzle(extractLinesFromInputFile()));
 }
 
+//shouldnt there be parseInt somewhere? (part2 as well)
 class Race {
     constructor(availableTime, recordDistance) {
         this.availableTime = availableTime;
