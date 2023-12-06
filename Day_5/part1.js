@@ -6,7 +6,7 @@ function extractLinesFromInputFile() {
 }
 
 function main() {
-    console.log(newFunction(extractLinesFromInputFile()));
+    console.log(getNearestLocation(extractLinesFromInputFile()));
 }
 
 class Map {
@@ -15,18 +15,44 @@ class Map {
         this.coordinates = [];
         for(const coordinatesSet of coordinatesSets) {
             this.coordinates.push({
-                destinationRangeStart: coordinatesSet[0],
-                sourceRangeStart: coordinatesSet[1],
-                rangeLength: coordinatesSet[2]  
+                destinationRangeStart: parseInt(coordinatesSet[0]),
+                sourceRangeStart: parseInt(coordinatesSet[1]),
+                rangeLength: parseInt(coordinatesSet[2])  
             })
+        }
+    }
+
+    getCorrespondingValue(valueToTranslate) {
+        let matchingValue = 0;
+        const coordinate = this.findCorrespondingCoordinate(valueToTranslate);
+        if(!coordinate) { return valueToTranslate; }
+        matchingValue = valueToTranslate + coordinate.destinationRangeStart - coordinate.sourceRangeStart;
+
+        return matchingValue;
+    }
+
+    findCorrespondingCoordinate(value) {
+        for(const coordinate of this.coordinates) {
+            if (value >= coordinate.sourceRangeStart && value <= coordinate.sourceRangeStart + coordinate.rangeLength - 1) { return coordinate; }
         }
     }
 }
 
-function newFunction(sections) {
+function getNearestLocation(sections) {
     const seedsDeclaration = 'seeds: ';
     const seeds = sections.shift().slice(seedsDeclaration.length).trim().split(' ');
     const maps = formatMaps(sections);
+    let locations = []; 
+    
+    for(const seed of seeds) {
+        let valueToTranslate = parseInt(seed);
+        for(const map of maps) {
+            valueToTranslate = map.getCorrespondingValue(valueToTranslate);
+        }
+        locations.push(valueToTranslate);
+    }
+
+    return Math.min(...locations);
 }
 
 function formatMaps(mapsToFormat) {
