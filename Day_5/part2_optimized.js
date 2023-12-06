@@ -16,9 +16,7 @@ function getNearestLocation(sections) {
     let nearestLocation = null;
 
     for(let i = 0; i < seedsCoordinates.length; i = i + 2) {
-        let location = new SeedSet(parseInt(seedsCoordinates[i]), parseInt(seedsCoordinates[i + 1])).getLocation(maps);
-        if (nearestLocation !== null) { if (nearestLocation > location) { nearestLocation = location; } }
-        else { nearestLocation = location; }
+        nearestLocation = updateNearestLocation(nearestLocation, new SeedSet(parseInt(seedsCoordinates[i]), parseInt(seedsCoordinates[i + 1])).getNearestLocation(maps));
     }
     return nearestLocation;
 }
@@ -32,6 +30,12 @@ function formatMaps(mapsToFormat) {
         maps.push(new Map(declaration, sectionLines));
     }
     return maps;
+}
+
+function updateNearestLocation(nearestLocation, location) {
+    if (nearestLocation !== null) { if (nearestLocation > location) { return location } }
+    else { return location }
+    return nearestLocation;
 }
 
 class Map {
@@ -66,20 +70,24 @@ class SeedSet {
         this.firstSeed = firstSeed;
         this.numberOfSeeds = numberOfSeeds; 
     }   
-    getLocation(maps) {
+    getNearestLocation(maps) {
         let nearestLocation = null;
     	for(let i = 0; i <= this.numberOfSeeds; i++) {
-            let seed = this.firstSeed + i;
-            let valueToTranslate = seed;
-            for(const map of maps) {
-                valueToTranslate = map.getCorrespondingValue(valueToTranslate);
-            }
-            let location = valueToTranslate;
-            if (nearestLocation !== null) { if (nearestLocation > location) { nearestLocation = location; } }
-            else { nearestLocation = location; }
+            nearestLocation = updateNearestLocation(nearestLocation, getNearestLocationForSeed(this.firstSeed + i, maps));
         }
         return nearestLocation;
     }
 }
+function getNearestLocationForSeed(seed, maps) {
+    let translationValue = seed; 
+    for(const map of maps) {
+        translationValue = map.getCorrespondingValue(translationValue);
+    }
+    return translationValue;
+}
 
+const start = Date.now();
 main();
+const end = Date.now();
+
+console.log(`start: ${start}\nend:${end}`);
