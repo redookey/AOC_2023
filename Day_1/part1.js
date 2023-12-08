@@ -33,6 +33,7 @@ function digitFilter(str) {
 }
 
 function isDigit(char) {
+    //this whole thing can be replaced by a regex expression /[0-9]/ -> (0 - 9) values are declared in order in ASCII
     //maybe make a library or smth? this function is declared way too many times throughout aoc_2023
     const digits = '0123456789';
     return (digits.indexOf(char) !== -1);
