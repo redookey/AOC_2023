@@ -33,13 +33,11 @@ function digitFilter(str) {
 }
 
 function isDigit(char) {
+    //maybe make a library or smth? this function is declared way too many times throughout aoc_2023
     const digits = '0123456789';
-    for(const digit of digits) {
-        if(char == digit) {
-            return true;
-        } 
-    }
-    return false;
+    return (digits.indexOf(char) !== -1);
+    //alternative:
+    //return char >= '0' && char <= '9';
 }
 
 main();

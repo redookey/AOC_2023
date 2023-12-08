@@ -42,12 +42,7 @@ function getDigit(calibrationLine, position) {
 
 function isDigit(char) {
     const digits = '0123456789';
-    for(const digit of digits) {
-        if(char == digit) {
-            return true;
-        } 
-    }
-    return false;
+    return (digits.indexOf(char) !== -1);
 }
 
 function isSpelledOutDigit(str) {
