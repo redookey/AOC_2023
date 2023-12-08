@@ -67,7 +67,7 @@ class NodeSet {
     getNode(nodeCode) {
         return this.nodes.find(node => node.code === nodeCode);
     }
-     updatePath(nextNodeCode, nodePosition) {
+    updatePath(nextNodeCode, nodePosition) {
         this.currentNodes[nodePosition] = this.getNode(nextNodeCode);
         this.starterNodes[nodePosition].incrementNumberOfSteps();
         if (this.currentNodes[nodePosition].code[2] === 'Z') { this.starterNodes[nodePosition].pathFound = true; }
