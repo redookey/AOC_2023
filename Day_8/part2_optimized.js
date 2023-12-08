@@ -6,7 +6,10 @@ function extractLinesFromInputFile() {
 }
 
 function main() {
+    const start = Date.now();
     console.log(solvePuzzle(extractLinesFromInputFile()));
+    const end = Date.now();
+    console.log(`start: ${start}\nend: ${end}`);
 }
 
 function solvePuzzle(lines) {
@@ -69,11 +72,11 @@ class NodeSet {
         this.starterNodes = this.nodes.filter(node => node.code[2] === 'A');
         this.currentNodes = this.starterNodes.map(node => ({ ...node }));
     }
-    allPathsFound() {
-        return this.starterNodes.every(node => node.pathFound);
-    }
     getNode(nodeCode) {
         return this.nodes.find(node => node.code === nodeCode);
+    }
+    allPathsFound() {
+        return this.starterNodes.every(node => node.pathFound);
     }
     getNumberOfSteps() {
         return getLCM(this.starterNodes.map(node => node.stepsToFinish));
@@ -93,8 +96,4 @@ class Node {
     }
 }
 
-const start = Date.now();
 main();
-const end = Date.now();
-
-console.log(`start: ${start}\nend: ${end}`);
