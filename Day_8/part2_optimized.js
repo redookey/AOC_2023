@@ -20,16 +20,8 @@ function solvePuzzle(lines) {
             if(nodeSet.allPathsFound()) { return nodeSet.getNumberOfSteps(); }
             for(let i = 0; i < nodeSet.currentNodes.length; i++) {
                 if (nodeSet.starterNodes[i].pathFound) { continue; }
-                if (instruction === 'L') {
-                    nodeSet.currentNodes[i] = nodeSet.getNode(nodeSet.currentNodes[i].leftNodeCode);
-                    nodeSet.starterNodes[i].incrementNumberOfSteps();
-                    if (nodeSet.currentNodes[i].code[2] === 'Z') { nodeSet.starterNodes[i].pathFound = true; }    
-                }
-                if (instruction === 'R') {
-                    nodeSet.currentNodes[i] = nodeSet.getNode(nodeSet.currentNodes[i].rightNodeCode);
-                    nodeSet.starterNodes[i].incrementNumberOfSteps();
-                    if (nodeSet.currentNodes[i].code[2] === 'Z') { nodeSet.starterNodes[i].pathFound = true; }
-                }
+                if (instruction === 'L') { nodeSet.updatePath(nodeSet.currentNodes[i].leftNodeCode, i); }
+                if (instruction === 'R') { nodeSet.updatePath(nodeSet.currentNodes[i].rightNodeCode, i); }
             }
         }
     }
@@ -74,6 +66,11 @@ class NodeSet {
     }
     getNode(nodeCode) {
         return this.nodes.find(node => node.code === nodeCode);
+    }
+     updatePath(nextNodeCode, nodePosition) {
+        this.currentNodes[nodePosition] = this.getNode(nextNodeCode);
+        this.starterNodes[nodePosition].incrementNumberOfSteps();
+        if (this.currentNodes[nodePosition].code[2] === 'Z') { this.starterNodes[nodePosition].pathFound = true; }
     }
     allPathsFound() {
         return this.starterNodes.every(node => node.pathFound);
