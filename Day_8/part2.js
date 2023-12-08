@@ -27,7 +27,7 @@ function solvePuzzle(lines) {
 function getNodes(lines) {
     let nodes = [];
     for(const line of lines) {
-        let coordinates = line.replace(/[^A-Z0-9]/g, '');
+        let coordinates = line.replace(/[^A-Z]/g, '');
         if (line) {
             nodes.push(new Node(coordinates.substring(0, 3), coordinates.substring(3, 6), coordinates.substring(6, 9)));
         }
