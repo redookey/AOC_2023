@@ -97,4 +97,4 @@ const start = Date.now();
 main();
 const end = Date.now();
 
-console.log(`start: ${start}\nend:${end}`);
+console.log(`start: ${start}\nend: ${end}`);
