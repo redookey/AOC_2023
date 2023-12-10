@@ -23,8 +23,8 @@ function solvePuzzle(lines) {
 class Speciment {
     constructor(historyValues) {
         this.historyValues = historyValues.map(value => parseInt(value));
-        this.previousValue = this.getPreviousValue();
-        this.nextValue = this.getNextValue();
+        this.previousValue = this.getNewValue('previous');
+        this.nextValue = this.getNewValue('next');
     }
     getHistoryLevels() {
         let changesInHistoryUpper = [...this.historyValues];
@@ -42,25 +42,17 @@ class Speciment {
 
         return historyLevels;
     }
-    getPreviousValue() {
+    getNewValue(direction) {
         let historyLevels = this.getHistoryLevels();
         for(let i = historyLevels.length - 1; i > 0; i--) {
             const currentHistoryLevel = historyLevels[i];
             let upperHistoryLevel = historyLevels[i - 1];
-            upperHistoryLevel.unshift(upperHistoryLevel[0] - currentHistoryLevel[0]);
+            if ('previous') { upperHistoryLevel.unshift(upperHistoryLevel[0] - currentHistoryLevel[0]); }
+            if ('next') { upperHistoryLevel.push(currentHistoryLevel[currentHistoryLevel.length - 1] + upperHistoryLevel[upperHistoryLevel.length - 1]); }
         }
         const firstHistoryLevel = historyLevels[0];
-        return firstHistoryLevel[0];
-    }
-    getNextValue() {
-        let historyLevels = this.getHistoryLevels();
-        for(let i = historyLevels.length - 1; i > 0; i--) {
-            const currentHistoryLevel = historyLevels[i];
-            let upperHistoryLevel = historyLevels[i - 1];
-            upperHistoryLevel.push(currentHistoryLevel[currentHistoryLevel.length - 1] + upperHistoryLevel[upperHistoryLevel.length - 1]);
-        }
-        const firstHistoryLevel = historyLevels[0];
-        return firstHistoryLevel[firstHistoryLevel.length - 1];
+        if ('previous') { return firstHistoryLevel[0]; }
+        if ('next') { return firstHistoryLevel[firstHistoryLevel.length - 1]; }
     }
 }
 
