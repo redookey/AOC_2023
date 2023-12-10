@@ -15,16 +15,14 @@ function main() {
 function solvePuzzle(lines) {
     let speciments = [];
     for(const line of lines) {
-        speciments.push(new Speciment(line.split(' ')));
+        speciments.push(new Speciment(line.split(' ')).extendHistory());
     }
-    return speciments.reduce((accumulator, currentValue) => accumulator + currentValue.previousValue, 0);
+    return speciments.reduce((accumulator, currentValue) => accumulator + currentValue.historyValues[0], 0);
 }
 
 class Speciment {
     constructor(historyValues) {
         this.historyValues = historyValues.map(value => parseInt(value));
-        this.previousValue = this.getNewValue('previous');
-        this.nextValue = this.getNewValue('next');
     }
     getHistoryLevels() {
         let changesInHistoryUpper = [...this.historyValues];
@@ -42,17 +40,18 @@ class Speciment {
 
         return historyLevels;
     }
-    getNewValue(direction) {
+    extendHistory() {
         let historyLevels = this.getHistoryLevels();
         for(let i = historyLevels.length - 1; i > 0; i--) {
             const currentHistoryLevel = historyLevels[i];
             let upperHistoryLevel = historyLevels[i - 1];
-            if ('previous') { upperHistoryLevel.unshift(upperHistoryLevel[0] - currentHistoryLevel[0]); }
-            if ('next') { upperHistoryLevel.push(currentHistoryLevel[currentHistoryLevel.length - 1] + upperHistoryLevel[upperHistoryLevel.length - 1]); }
+            upperHistoryLevel.unshift(upperHistoryLevel[0] - currentHistoryLevel[0]);
+            upperHistoryLevel.push(currentHistoryLevel[currentHistoryLevel.length - 1] + upperHistoryLevel[upperHistoryLevel.length - 1]);
         }
         const firstHistoryLevel = historyLevels[0];
-        if ('previous') { return firstHistoryLevel[0]; }
-        if ('next') { return firstHistoryLevel[firstHistoryLevel.length - 1]; }
+        this.historyValues.unshift(firstHistoryLevel[0]);
+        this.historyValues.push(firstHistoryLevel[firstHistoryLevel.length - 1]);
+        return this;
     }
 }
 
