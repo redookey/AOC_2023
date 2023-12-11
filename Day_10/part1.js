@@ -35,70 +35,86 @@ class GameField {
 }
 
 class PipeLoop {
-    constructor(startingPipe) {
+    constructor(startingPipe, rows, startingPipeRowNumber) {
         this.startingPipe = startingPipe;
-        this.furtherestPipe = null;
+
+        this.currentForwardRow = this.rows[startingPipeRowNumber];
+        this.currentBackwardRow = this.rows[startingPipeRowNumber];
+        this.upperForwardRow = this.rows[startingPipeRowNumber - 1];
+        this.upperBackwardRow = this.rows[startingPipeRowNumber - 1];
+        this.lowerForwardRow = this.rows[startingPipeRowNumber + 1];
+        this.lowerBackwardRow = this.rows[startingPipeRowNumber + 1];
+
+        this.lastFoundForwardPipe = startingPipe;
+        this.lastFoundBackwardPipe = startingPipe;
         this.pipes = [];
-        this.lastFoundPipe = startingPipe;
+        // this.furtherestPipe = null;
     }
-    scanForNextPipe(currentRow, upperRow, lowerRow) {
-        // this.lastFoundPipe.
+    extendPipeMap() {
+        //basically what I did in Day9 ->
+        //each call,this function will push a newly found pipe to the end of the array (in direction1),
+        //and unshift a newly found pipe at the beginning of the array (direction2) ->
+        //until both of them reach the startingPipe (the loop will be fully mapped then) ->
+        //afterwards I can simply take the index of the startingPipe in the array and there we go
+        this.extendPipeMapForward();
+        this.extendPipeMapBackward();
+        //i need to update the rpws after each extend (west,east->stay the same; north - go up; south - go down)
     }
 
+    extendPipeMapForward(currentRow, upperRow, lowerRow) {
+        this.nextForwardPipe = this.getNextPipe(this.lastFoundForwardPipe, currentRow, upperRow, lowerRow);
+        this.pipes.push(this.lastFoundForwardPipe);
+        this.lastFoundForwardPipe = this.nextForwardPipe;
+        this.nextForwardPipe = null;
+    }
+    extendPipeMapBackward(currentRow, upperRow, lowerRow) {
+        this.nextBackwardPipe = this.getNextPipe(this.lastFoundBackwardPipe, currentRow, upperRow, lowerRow);
+        this.pipes.push(this.lastFoundBackwardPipe);
+        this.lastFoundBackwardPipe = this.nextBackwardPipe;
+        this.nextBackwardPipe = null;
+    }
+    
+    getNextPipe(previousPipe, currentRow, upperRow, lowerRow) {
+        let nextPipe = null;
+        switch(previousPipe.nextCompatibility) {
+            case ('north'): {
+                nextPipe = new Pipe(upperRow[previousPipe.columnNumber],/* rowNumber ,*/ previousPipe.columnNumber, previousPipe.nextCompatibility);
+                break;
+            }
+            case ('south'): {
+                nextPipe = new Pipe(lowerRow[previousPipe.columnNumber],/* rowNumber ,*/ previousPipe.columnNumber, previousPipe.nextCompatibility);
+                break;
+            }
+            case ('west'): {
+                nextPipe = new Pipe(currentRow[previousPipe.columnNumber - 1],/* rowNumber ,*/ previousPipe.columnNumber - 1, previousPipe.nextCompatibility);
+                break;
+            }
+            case ('east'): {
+                nextPipe = new Pipe(currentRow[previousPipe.columnNumber + 1],/* rowNumber ,*/ previousPipe.columnNumber + 1, previousPipe.nextCompatibility);
+                break;
+            }
+        }
+        return nextPipe;
+    }
 }
 
 
 class Pipe {
-    constructor(symbol, rowNumber, columnNumber, previousCompatibility, nextCompatibility) /*northSymbol, southSymbol, westSymbol, eastSymbol)*/ {
+    constructor(symbol, /* rowNumber, */columnNumber, previousCompatibility, distanceFromStart) {
         this.type = new PipeType(symbol);
-        this.rowNumber = rowNumber; 
+        //this.rowNumber = rowNumber; 
         this.columnNumber = columnNumber;
         this.previousCompatibility = previousCompatibility;
-        this.nextCompatibility = nextCompatibility;
-        // this.northPipeType = new PipeType(northSymbol);
-        // this.southPipeType = new PipeType(southSymbol);
-        // this.westPipeType = new PipeType(westSymbol);
-        // this.eastPipeType = new PipeType(eastSymbol);
+        this.nextCompatibility = getNextCompatibility();
         
         if (this.type.symbol === 'S') { this.initStartingPipe(); }
-        // this.distanceFromStart
+        this.distanceFromStart = distanceFromStart;
     }
     getNextCompatibility() {
-
+        for(const compatibility of this.type.compatibilities) {
+            if (compatibility !== this.previousCompatibility) { return compatibility; }
+        }
     }
-    // initStartingPipe() {
-    //     this.isStartingPipe = true;
-    //     if (this.northPipeType.southCompatible && this.southPipeType.northCompatible) {
-    //         this.type.symbol = '|';
-    //         this.type.northCompatible = true;
-    //         this.type.southCompatible = true;
-    //     }
-    //     if (this.westPipeType.eastCompatible && this.eastPipeType.westCompatible) {
-    //         this.type.symbol = '-';
-    //         this.type.westCompatible = true;
-    //         this.type.eastCompatible = true;
-    //     }
-    //     if (this.northPipeType.southCompatible && this.eastPipeType.westCompatible) {
-    //         this.type.symbol = 'L';
-    //         this.northCompatible = true;
-    //         this.eastCompatible = true;
-    //     }
-    //     if (this.northPipeType.southCompatible && this.westPipeType.eastCompatible) {
-    //         this.type.symbol = 'J';
-    //         this.northCompatible = true;
-    //         this.westCompatible = true;
-    //     }
-    //     if (this.southPipeType.northCompatible && this.westPipeType.eastCompatible) {
-    //         this.type.symbol = '7';
-    //         this.southCompatible = true;
-    //         this.westCompatible = true;
-    //     }
-    //     if (this.southPipeType.northCompatible && this.eastPipeType.westCompatible) {
-    //         this.type.symbol = 'F';
-    //         this.southCompatible = true;
-    //         this.eastCompatible = true;
-    //     }
-    // }
 }
 
 class PipeType {
@@ -139,49 +155,7 @@ class PipeType {
         }
     }
 }
-            // initCompatibility() {
-                //     this.northCompatible = false;
-                //     this.southCompatible = false;
-    //     this.westCompatible = false;
-    //     this.eastCompatible = false;
-
-    //     switch(this.symbol) {
-    //         case('S'): {
-    //             break;
-    //         }
-    //         case('|'): {
-    //             this.northCompatible = true;
-    //             this.southCompatible = true;
-    //             break;
-    //         }
-    //         case('-'): {
-    //             this.westCompatible = true;
-    //             this.eastCompatible = true;
-    //             break;
-    //         }
-    //         case('L'): {
-    //             this.northCompatible = true;
-    //             this.eastCompatible = true;
-    //             break;
-    //         }
-    //         case('J'): {
-    //             this.northCompatible = true;
-    //             this.westCompatible = true;
-    //             break;
-    //         }
-    //         case('7'): {
-    //             this.southCompatible = true;
-    //             this.westCompatible = true;
-    //             break;
-    //         }
-    //         case('F'): {
-    //             this.southCompatible = true;
-    //             this.eastCompatible = true;
-    //             break;
-    //         }
-    //     }
-    // }
-
+      
 class Location {
     constructor(row, column) {
         this.row = row;
