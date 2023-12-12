@@ -18,8 +18,8 @@ function solvePuzzle(data) {
     const rows = data.split(`\n`);
     const rowLength = rows[0].length;
     const startingPointLocation = new Location(Math.floor(startingPointPosition / rowLength), startingPointPosition % rowLength);
-
-    return new PipeLoop(rows, startingPointLocation).getFurtherestDistanceFromStart();
+    const constructedMap = new PipeLoop(rows, startingPointLocation).getConstructedMap();
+    fs.writeFileSync(__dirname + '/test.txt', constructedMap);
 }
 
 class Location {
@@ -95,6 +95,62 @@ class PipeLoop {
     getFurtherestDistanceFromStart() {
         return this.pipes.length / 2;
     }
+
+    getRawMap() {
+        let rawMap = this.rows.join('');
+        let newSymbol = '#';
+        rawMap = rawMap.replaceAll('|', 'I');
+        rawMap = rawMap.replaceAll('-', '_');
+        for(const pipe of this.pipes) {
+            switch(pipe.type.symbol) {
+                case('|'): {
+                    newSymbol = '|';
+                    break;
+                }
+                case('-'): {
+                    newSymbol = '-';
+                    break;
+                }
+                case('L'): {
+                    newSymbol = '└';
+                    break;
+                }
+                case('J'): {
+                    newSymbol = '┘';
+                    break;
+                }
+                case('7'): {
+                    newSymbol = '┐';
+                    break;
+                }
+                case('F'): {
+                    newSymbol = '┌';
+                    break;
+                }
+            }
+            rawMap = rawMap.substring(0, pipe.rawDataPosition) + newSymbol + rawMap.substring(pipe.rawDataPosition + 1);
+        }
+        
+        const validCharacters = "#|-└┘┐┌";
+
+        rawMap = rawMap.split('');
+        for (let i = 0; i < rawMap.length; i++) {
+            if (!validCharacters.includes(rawMap[i])) { rawMap[i] = '.'; }
+        }
+        rawMap = rawMap.join('');
+
+        return rawMap;
+    }
+    
+    getConstructedMap() {
+        const rawMap = this.getRawMap();
+        const constructedMap = [];
+        const rowLength = this.rows[0].length;
+        for (let i = 0; i < rawMap.length; i += rowLength) {
+            constructedMap.push(rawMap.substring(i, i + rowLength));
+        }
+        return constructedMap.join(`\n`);
+      }
 }
 
 
@@ -122,9 +178,13 @@ class Pipe {
         this.type = new PipeType(symbol);
         this.rowNumber = rowNumber;
         this.columnNumber = columnNumber;
+        this.rawDataPosition = this.getRawDataPosition();
         this.previousCompatibility = previousCompatibility;
         if (nextCompatibility) { this.nextCompatibility = nextCompatibility; }
         else { this.nextCompatibility = this.getNextCompatibility(); }
+    }
+    getRawDataPosition() {
+        return this.rowNumber * 140 + this.columnNumber;
     }
     getNextCompatibility() {
         for(const compatibility of this.type.compatibilities) {
