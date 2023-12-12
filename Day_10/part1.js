@@ -13,6 +13,11 @@ function main() {
 }
 
 function solvePuzzle(data) {
+    //TODO
+    // const emptyLine = '............................................................................................................................................';
+    // lines.unshift(emptyLine);
+    // lines.push(emptyLine);
+
     const dataWithoutSeperators = data.replaceAll(`\n`, '');
     const startingPointPosition = dataWithoutSeperators.indexOf('S');
     const rows = data.split(`\n`);
@@ -38,37 +43,31 @@ class PipeLoop {
     
     initStartingProperties() {
         this.startingRowSet = new RowSet(this.rows, this.startingPointLocation.rowNumber);
-        this.startingPipe = new Pipe(this.rows[this.startingPointLocation.rowNumber][this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber, this.getStartingCompatibility());
+        this.startingCompatibilities = this.getStartingCompatibilities();
+        this.startingPipe = new Pipe(this.rows[this.startingPointLocation.rowNumber][this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber, this.startingCompatibilities[0]);
+        this.startingPipe.nextCompatibility = this.startingCompatibilities[1];
     }
 
-    getStartingCompatibility() {
-        switch(true) {
-            case(new PipeType(this.startingRowSet.upperRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('south')): {
-                return 'north';
-            }    
-            case(new PipeType(this.startingRowSet.lowerRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('north')): {
-                return 'south';
-            }
-            case(new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber - 1]).compatibilities.includes('east')): {
-                return 'west';
-            }
-            case(new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber + 1]).compatibilities.includes('west')): {
-                return 'east';
-            }
-        }
+    getStartingCompatibilities() {
+        let compatibilities = [];
+        if (new PipeType(this.startingRowSet.upperRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('south')) { compatibilities.push('north'); }    
+        if (new PipeType(this.startingRowSet.lowerRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('north')) { compatibilities.push('south'); }
+        if (new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber - 1]).compatibilities.includes('east')) { compatibilities.push('west'); }
+        if (new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber + 1]).compatibilities.includes('west')) { compatibilities.push('east'); }
+        return compatibilities;
     }
 
     mapPipeLoop() {
         this.pipes = [this.startingPipe];
         this.lastFoundPipe = this.getNextPipe(this.startingPipe, this.startingRowSet);
-        this.lastFoundRowSet = new RowSet(rows, this.lastFoundPipe.rowNumber);
+        this.lastFoundRowSet = new RowSet(this.rows, this.lastFoundPipe.rowNumber);
         while(this.extendPipeMap()); //if this works, thats pretty cool
     }
     
     extendPipeMap() {
         const nextPipe = this.getNextPipe(this.lastFoundPipe, this.lastFoundRowSet);
-        if (!nextPipe) { return false; }
         this.pipes.push(this.lastFoundPipe);
+        if (!nextPipe) { return false; }
         this.lastFoundRowSet.updateRowSet(nextPipe.rowNumber);
         this.lastFoundPipe = nextPipe;
         return true;
@@ -124,12 +123,12 @@ class Row {
 }
 
 class Pipe {
-    constructor(symbol, rowNumber, columnNumber, previousCompatibility) {
+    constructor(symbol, rowNumber, columnNumber, previousCompatibility, nextCompatibility) {
         this.type = new PipeType(symbol);
         this.rowNumber = rowNumber;
         this.columnNumber = columnNumber;
         this.previousCompatibility = previousCompatibility;
-        this.nextCompatibility = getNextCompatibility();
+        this.nextCompatibility = this.getNextCompatibility();
     }
     getNextCompatibility() {
         for(const compatibility of this.type.compatibilities) {
