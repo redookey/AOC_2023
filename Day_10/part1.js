@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractDataFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data;
 }
 
@@ -13,16 +13,11 @@ function main() {
 }
 
 function solvePuzzle(data) {
-    // const dataWithoutSeperators = data.replace(/\n/, '');
-    // const startingPointPosition = dataWithoutSeperators.indexOf('S') + 1;
-    // const rows = data.split(/\n/);
-    // const startingPointLocation = new Location(Math.floor(startingPointPosition / rows[0].length) + 1, (startingPointPosition + 1) % rows[0].length);
-    
-    const dataWithoutSeperators = data.replace(/\n/, '');
+    const dataWithoutSeperators = data.replaceAll(`\n`, '');
     const startingPointPosition = dataWithoutSeperators.indexOf('S');
-    const rows = data.split(/\n/);
+    const rows = data.split(`\n`);
     const rowLength = rows[0].length;
-    const startingPointLocation = new Location(Math.floor(startingPointPosition / rowLength) + 1, startingPointPosition % rowLength);
+    const startingPointLocation = new Location(Math.floor(startingPointPosition / rowLength), startingPointPosition % rowLength);
 
     return new PipeLoop(rows, startingPointLocation).getFurtherestDistanceFromStart();
 }
