@@ -40,8 +40,7 @@ class PipeLoop {
     initStartingProperties() {
         this.startingRowSet = new RowSet(this.rows, this.startingPointLocation.rowNumber);
         this.startingCompatibilities = this.getStartingCompatibilities();
-        this.startingPipe = new Pipe(this.rows[this.startingPointLocation.rowNumber][this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber, this.startingCompatibilities[0]);
-        this.startingPipe.nextCompatibility = this.startingCompatibilities[1];
+        this.startingPipe = new Pipe(this.rows[this.startingPointLocation.rowNumber][this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber, this.startingCompatibilities[0], this.startingCompatibilities[1]);
     }
 
     getStartingCompatibilities() {
@@ -119,12 +118,13 @@ class Row {
 }
 
 class Pipe {
-    constructor(symbol, rowNumber, columnNumber, previousCompatibility, nextCompatibility) {
+    constructor(symbol, rowNumber, columnNumber, previousCompatibility, nextCompatibility = null) {
         this.type = new PipeType(symbol);
         this.rowNumber = rowNumber;
         this.columnNumber = columnNumber;
         this.previousCompatibility = previousCompatibility;
-        this.nextCompatibility = this.getNextCompatibility();
+        if (nextCompatibility) { this.nextCompatibility = nextCompatibility; }
+        else { this.nextCompatibility = this.getNextCompatibility(); }
     }
     getNextCompatibility() {
         for(const compatibility of this.type.compatibilities) {
