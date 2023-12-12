@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractDataFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
     return data;
 }
 
@@ -13,13 +13,18 @@ function main() {
 }
 
 function solvePuzzle(data) {
-    const startingPointPosition = data.indexOf('S');
-    const startingPointLocation = new Location(startingPointPosition / rows[0].length, startingPointPosition % rows[0].length);
+    // const dataWithoutSeperators = data.replace(/\n/, '');
+    // const startingPointPosition = dataWithoutSeperators.indexOf('S') + 1;
+    // const rows = data.split(/\n/);
+    // const startingPointLocation = new Location(Math.floor(startingPointPosition / rows[0].length) + 1, (startingPointPosition + 1) % rows[0].length);
     
-    const rows = data.split(/\r?\n/);
-    const pipeLoop = new PipeLoop(rows, startingPointLocation);
-    
-    
+    const dataWithoutSeperators = data.replace(/\n/, '');
+    const startingPointPosition = dataWithoutSeperators.indexOf('S');
+    const rows = data.split(/\n/);
+    const rowLength = rows[0].length;
+    const startingPointLocation = new Location(Math.floor(startingPointPosition / rowLength) + 1, startingPointPosition % rowLength);
+
+    return new PipeLoop(rows, startingPointLocation).getFurtherestDistanceFromStart();
 }
 class Location {
     constructor(rowNumber, columnNumber) {
@@ -97,6 +102,10 @@ class PipeLoop {
         if (nextPipe.type.symbol === 'S') { return null; }
         return nextPipe;
     }
+
+    getFurtherestDistanceFromStart() {
+        return this.pipes.length / 2;
+    }
 }
 
 
@@ -106,9 +115,9 @@ class RowSet {
         this.updateRowSet(currentRowNumber);
     }
     updateRowSet(currentRowNumber) {
-        this.currentRow = new Row(allRows[currentRowNumber], currentRowNumber);
-        this.upperRow = new Row(allRows[currentRowNumber - 1], currentRowNumber - 1);
-        this.lowerRow = new Row(allRows[currentRowNumber + 1], currentRowNumber + 1);
+        this.currentRow = new Row(this.allRows[currentRowNumber], currentRowNumber);
+        this.upperRow = new Row(this.allRows[currentRowNumber - 1], currentRowNumber - 1);
+        this.lowerRow = new Row(this.allRows[currentRowNumber + 1], currentRowNumber + 1);
     }
 }
 
@@ -172,3 +181,5 @@ class PipeType {
         }
     }
 }
+
+main();
