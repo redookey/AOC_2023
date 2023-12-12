@@ -17,56 +17,45 @@ function solvePuzzle(data) {
     const startingPointLocation = new Location(startingPointPosition / rows[0].length, startingPointPosition % rows[0].length);
     
     const rows = data.split(/\r?\n/);
-    const gameField = new GameField(rows, startingPointLocation);
+    const pipeLoop = new PipeLoop(rows, startingPointLocation);
     
     
-}
-
-class GameField {
-    constructor(rows, startingPointLocation) {
-        this.rows = rows;
-        this.startingPointLocation = startingPointLocation;
-
-        //this.startingPipe = new Pipe(rows[startingPointLocation.row][startingPointLocation.column], )
-    }
-    scanForNextPipe() {
-
-    }
-}
-
-class RowSet {
-    constructor(allRows, currentRowNumber) {
-        this.allRows = allRows;
-        this.updateRowSet(currentRowNumber);
-    }
-    updateRowSet(currentRowNumber) {
-        currentRow = new Row(rows[currentRowNumber], currentRowNumber);
-        upperRow = new Row(rows[currentRowNumber - 1], currentRowNumber - 1);
-        lowerRow = new Row(rows[currentRowNumber + 1], currentRowNumber + 1);
-    }
-}
-
-class Row {
-    constructor(values, number) {
-        this.values = values;
-        this.number = number;
-    }
-
 }
 
 class PipeLoop {
-    constructor(startingPipe, rows, startingPipeRowNumber) {
-        this.startingPipe = startingPipe;
+    constructor(rows, startingPointLocation) {
         this.rows = rows;
-
-        this.forwardRowSet = new RowSet(rows, startingPipeRowNumber);
-        this.backwardRowSet = new RowSet(rows, startingPipeRowNumber);
-
-        this.lastFoundForwardPipe = startingPipe;
-        this.lastFoundBackwardPipe = startingPipe;
-
-        this.pipes = [];
-        // this.furtherestPipe = null;
+        this.startingPointLocation = startingPointLocation;
+        this.startingPipe = new StartingPipe(rows[startingPointLocation.rowNumber][startingPointLocation.columnNumber], startingPointLocation.rowNumber, startingPointLocation.columnNumber, null);
+        this.startingRowSet = new RowSet(rows, startingPointLocation.rowNumber);
+        this.lastFoundPipe = this.getSecondPipe();
+        this.lastFoundRowSet = ; //TODO
+        //its stupid to go both ways, just go forward
+//maybe get rid of the whole startingPipe thing? just use htose seprete pieces of information to initialize first pipes of each direction
+//gotta take care of the array logic (maybe don include startingPipe and divide by 2 at the end? floor up?)
+        
+        this.pipes = [this.startingPipe];
+        this.mapPipeLoop();
+        this.furtherestPipeNumber = this.pipes.indexOf(startingPipe); //i dont think this will work
+    }
+    getSecondPipe() {
+        switch(true) {
+            case(new PipeType(this.startingRowSet.upperRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('south')): {
+                return new Pipe(this.startingRowSet.upperRow.values[this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber - 1, this.startingPointLocation.columnNumber, 'south');
+            }
+            case(new PipeType(this.startingRowSet.lowerRow.values[this.startingPointLocation.columnNumber]).compatibilities.includes('north')): {
+                return new Pipe(this.startingRowSet.lowerRow.values[this.startingPointLocation.columnNumber], this.startingPointLocation.rowNumber + 1, this.startingPointLocation.columnNumber, 'north');
+            }
+            case(new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber - 1]).compatibilities.includes('east')): {
+                return new Pipe(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber - 1], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber - 1, 'east');
+            }
+            case(new PipeType(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber + 1]).compatibilities.includes('west')): {
+                return new Pipe(this.startingRowSet.currentRow.values[this.startingPointLocation.columnNumber + 1], this.startingPointLocation.rowNumber, this.startingPointLocation.columnNumber + 1, 'west');
+            }
+        }
+    }
+    mapPipeLoop() {
+        while(this.extendPipeMap());
     }
     extendPipeMap() {
         //basically what I did in Day9 ->
@@ -74,30 +63,22 @@ class PipeLoop {
         //and unshift a newly found pipe at the beginning of the array (direction2) ->
         //until both of them reach the startingPipe (the loop will be fully mapped then) ->
         //afterwards I can simply take the index of the startingPipe in the array and there we go
-        this.extendPipeMapForward();
-        this.extendPipeMapBackward();
+        if (!this.extendPipeMapForward()) { return false; }
+        if (!this.extendPipeMapBackward()) { return false; }
+        return true;
         //i need to update the rows after each extend (west,east->stay the same; north - go up; south - go down)
     }
     
     extendPipeMapForward() {
         //[0]maybe make a general function for these two functions?
         const nextPipe = this.getNextPipe(this.lastFoundForwardPipe, this.forwardRowSet);
-        if (nextPipe) { this.nextForwardPipe = nextPipe; }
-        else { /*S reached*/ }
+        if (!nextPipe) { return false; }
+        this.nextForwardPipe = nextPipe;
         this.forwardRowSet.updateRowSet(this.nextForwardPipe.rowNumber);
         this.pipes.push(this.lastFoundForwardPipe);
         this.lastFoundForwardPipe = this.nextForwardPipe;
         this.nextForwardPipe = null;
-    }
-    extendPipeMapBackward() {
-        //[0]
-        const nextPipe = this.getNextPipe(this.lastFoundBackwardPipe, this.backwardRowSet);
-        if (nextPipe) { this.nextBackwardPipe = nextPipe; }
-        else { /*S reached*/ }
-        this.backwardRowSet.updateRowSet(this.nextBackwardPipe.rowNumber);
-        this.pipes.push(this.lastFoundBackwardPipe);
-        this.lastFoundBackwardPipe = this.nextBackwardPipe;
-        this.nextBackwardPipe = null;
+        return true;
     }
     
     getNextPipe(previousPipe, rowSet) {
@@ -125,9 +106,34 @@ class PipeLoop {
     }
 }
 
+class Location {
+    constructor(rowNumber, columnNumber) {
+        this.rowNumber = rowNumber;
+        this.columnNumber = columnNumber;
+    }
+}
+
+class RowSet {
+    constructor(allRows, currentRowNumber) {
+        this.allRows = allRows;
+        this.updateRowSet(currentRowNumber);
+    }
+    updateRowSet(currentRowNumber) {
+        this.currentRow = new Row(rows[currentRowNumber], currentRowNumber);
+        this.upperRow = new Row(rows[currentRowNumber - 1], currentRowNumber - 1);
+        this.lowerRow = new Row(rows[currentRowNumber + 1], currentRowNumber + 1);
+    }
+}
+
+class Row {
+    constructor(values, number) {
+        this.values = values;
+        this.number = number;
+    }
+}
 
 class Pipe {
-    constructor(symbol, rowNumber, columnNumber, previousCompatibility, distanceFromStart) {
+    constructor(symbol, rowNumber, columnNumber, previousCompatibility/*, distanceFromStart*/) {
         this.type = new PipeType(symbol);
         this.rowNumber = rowNumber;
         this.columnNumber = columnNumber;
@@ -135,12 +141,19 @@ class Pipe {
         this.nextCompatibility = getNextCompatibility();
         
         if (this.type.symbol === 'S') { this.initStartingPipe(); }
-        this.distanceFromStart = distanceFromStart;
+        // this.distanceFromStart = distanceFromStart;
     }
     getNextCompatibility() {
         for(const compatibility of this.type.compatibilities) {
             if (compatibility !== this.previousCompatibility) { return compatibility; }
         }
+    }
+}
+
+class StartingPipe extends Pipe {
+    constructor(symbol, rowNumber, columnNumber, compatibilities) {
+        super(symbol, rowNumber, columnNumber, null);
+        this.compatibilities = compatibilities;
     }
 }
 
@@ -180,12 +193,5 @@ class PipeType {
                 break;
             }
         }
-    }
-}
-      
-class Location {
-    constructor(row, column) {
-        this.row = row;
-        this.column = column;
     }
 }
