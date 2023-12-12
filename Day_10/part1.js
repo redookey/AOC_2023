@@ -13,11 +13,6 @@ function main() {
 }
 
 function solvePuzzle(data) {
-    //TODO
-    // const emptyLine = '............................................................................................................................................';
-    // lines.unshift(emptyLine);
-    // lines.push(emptyLine);
-
     const dataWithoutSeperators = data.replaceAll(`\n`, '');
     const startingPointPosition = dataWithoutSeperators.indexOf('S');
     const rows = data.split(`\n`);
@@ -26,6 +21,7 @@ function solvePuzzle(data) {
 
     return new PipeLoop(rows, startingPointLocation).getFurtherestDistanceFromStart();
 }
+
 class Location {
     constructor(rowNumber, columnNumber) {
         this.rowNumber = rowNumber;
@@ -61,7 +57,7 @@ class PipeLoop {
         this.pipes = [this.startingPipe];
         this.lastFoundPipe = this.getNextPipe(this.startingPipe, this.startingRowSet);
         this.lastFoundRowSet = new RowSet(this.rows, this.lastFoundPipe.rowNumber);
-        while(this.extendPipeMap()); //if this works, thats pretty cool
+        while(this.extendPipeMap());
     }
     
     extendPipeMap() {
