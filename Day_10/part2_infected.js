@@ -19,22 +19,33 @@ function solvePuzzle(data) {
     const rowLength = rows[0].length;
     const startingPointLocation = new Location(Math.floor(startingPointPosition / rowLength), startingPointPosition % rowLength);
     const constructedMap = new PipeLoop(rows, startingPointLocation).getConstructedMap();
+    let mapOfObjects = getMapOfObjects(constructedMap);
 
 }
 
-function x(constructedMap) {
-    let dots = [];
-    let groupId = 0;
-    //constructedMap[] //change first symbol to '0'
-    for(let i = 0; i < constructedMap.length; i++) {
-        let row = constructedMap[i].split('');
-        for(let i = 0; i < row.length; i++) {
-            if(/*destn have a neighbor*/true) { groupId++; }
-            row[i] =  groupId;
-            // mapLine = rawMap.substring(0, ) + newSymbol + rawMap.substring(pipe.rawDataPosition + 1);
+function getInfectedMap(mapOfObjects) {
+    let infectedMap = [];
+    for(let rowNumber = 0; rowNumber < mapOfObjects.length; rowNumber++) {
+        let row = mapOfObjects[rowNumber].split('');
+        for(let objectNumber = 0; objectNumber < row.length; objectNumber++) {
+            //checkpoint
         }
-        if (symbol !== '.') { continue; }
     }
+    return infectedMap;
+}
+
+function getMapOfObjects(constructedMap) {
+    let objectsMap = [];
+    for(let rowNumber = 0; rowNumber < constructedMap.length; rowNumber++) {
+        let objectsRow = [];
+        let row = constructedMap[rowNumber].split('');
+        for(let symbolNumber = 0; symbolNumber < row.length; symbolNumber++) {
+            if (row[symbolNumber] === '.') { objectsRow.push(new Symbol('dot', rowNumber, symbolNumber)); }
+            else { objectsRow.push(new Symbol('pipe', rowNumber, symbolNumber)); }
+        }
+        objectsMap.push(objectsRow);
+    }
+    return objectsMap;
 }
 
 function noAdjacentMarked(allRows, currentRowNumber) {
@@ -43,15 +54,11 @@ function noAdjacentMarked(allRows, currentRowNumber) {
 
 }
 
-class RowSet {
-    constructor(allRows, currentRowNumber) {
-        this.allRows = allRows;
-        this.updateRowSet(currentRowNumber);
-    }
-    updateRowSet(currentRowNumber) {
-        this.currentRow = new Row(this.allRows[currentRowNumber], currentRowNumber);
-        this.upperRow = new Row(this.allRows[currentRowNumber - 1], currentRowNumber - 1);
-        this.lowerRow = new Row(this.allRows[currentRowNumber + 1], currentRowNumber + 1);
+class Symbol {
+    constructor(type, rowNumber, columnNumber) {
+        this.type = type;
+        this.rowNumber = rowNumber;
+        this.columnNumber = columnNumber;
     }
 }
 
