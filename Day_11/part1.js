@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data.split(/\r?\n/);
 }
 
@@ -13,12 +13,24 @@ function main() {
 }
 
 function solvePuzzle(lines) {
-    lines = duplicateRowsWithoutGalaxies(lines);
-    lines = duplicateColumnsWithoutGalaxies(lines);
-    // fs.writeFileSync(__dirname + '/test.txt', lines.join(`\n`));
+    lines = duplicateEmptyRowsAndColumns(lines);
+    const galaxies = getGalaxies(lines);
+    let totalDistance = 0;
+    for(let galaxyNo = 0; galaxyNo < galaxies.length; galaxyNo++) {
+        for(let galaxyToCompareNo = galaxyNo + 1; galaxyToCompareNo < galaxies.length; galaxyToCompareNo++) {
+            totalDistance += getDistanceBetweenGalaxies(galaxies[galaxyNo], galaxies[galaxyToCompareNo]);
+        }
+    }
+    return totalDistance;
 }
 
-function duplicateRowsWithoutGalaxies(lines) {
+function duplicateEmptyRowsAndColumns(lines) { 
+    lines = duplicateEmptyLines(lines);
+    lines = rotateLines(duplicateEmptyLines(rotateLines(lines)));
+    return lines;
+}
+
+function duplicateEmptyLines(lines) {
     for(let i = 0; i < lines.length; i++) {
         if (!lines[i].includes('#')) {
             lines.splice(i, 0, lines[i]);
@@ -28,33 +40,39 @@ function duplicateRowsWithoutGalaxies(lines) {
     return lines;
 }
 
-function duplicateColumnsWithoutGalaxies(rows) {
-    let columns = [];
-    const rowLength = rows[0].length;
+function rotateLines(lines) {
+    let rotatedLines = [];
+    const lineLength = lines[0].length;
     
-    for(let i = 0; i < rowLength; i++) {
-        let column = '';
-        for(const row of rows) {
-            column += row[i];
+    for(let i = 0; i < lineLength; i++) {
+        let rotatedLine = '';
+        for(const line of lines) {
+            rotatedLine += line[i];
         }
-        columns.push(column);
+        rotatedLines.push(rotatedLine);
     }
-    fs.writeFileSync(__dirname + '/test.txt', columns.join(`\n`));
-    return columns;
+    return rotatedLines;
 }
 
-function test() {
-    let myArray = [1, 2, 3, 5, 6];
+function getDistanceBetweenGalaxies(galaxy1, galaxy2) {
+    return Math.abs(galaxy1.rowNumber - galaxy2.rowNumber) + Math.abs(galaxy1.columnNumber - galaxy2.columnNumber);
+}
 
-    for(let i = 0; i < myArray.length; i++) {
-        let test = myArray[i];
-        if (myArray[i] === 3) {
-            myArray.splice(i, 0, myArray[i]);
-            i++;
+function getGalaxies(galaxyMap) {
+    let galaxies = [];
+    for(let lineNo = 0; lineNo < galaxyMap.length; lineNo++) {
+        for(let columnNo = 0; columnNo < galaxyMap[lineNo].length; columnNo++) {
+            if (galaxyMap[lineNo][columnNo] === '#') { galaxies.push(new Galaxy(lineNo, columnNo)); }
         }
     }
-    
-    console.log(myArray); // Output: [1, 2, 3, 4, 5, 6]
+    return galaxies;
+}
+
+class Galaxy {
+    constructor(rowNumber, columnNumber) {
+        this.rowNumber = rowNumber;
+        this.columnNumber = columnNumber;
+    }
 }
 
 main();
