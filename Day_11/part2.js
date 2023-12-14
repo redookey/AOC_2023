@@ -21,7 +21,10 @@ function solvePuzzle(lines) {
     updateGalaxiesRowNos(barebonesRowMap, galaxies);
     updateGalaxiesColumnNos(barebonesColumnMap, galaxies);
 
+    return getTotalDistance(galaxies);
+}
 
+function getTotalDistance(galaxies) {
     let totalDistance = 0;
     for(let galaxyNo = 0; galaxyNo < galaxies.length; galaxyNo++) {
         for(let galaxyToCompareNo = galaxyNo + 1; galaxyToCompareNo < galaxies.length; galaxyToCompareNo++) {
