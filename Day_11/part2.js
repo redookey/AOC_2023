@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data.split(/\r?\n/);
 }
 
@@ -13,13 +13,15 @@ function main() {
 }
 
 function solvePuzzle(lines) {
-    let extendedRows = duplicateEmptyLines(lines);
-    let galaxies = getGalaxies(extendedRows);
-    let extendedColumns = rotateLines(lines);
-    extendedColumns = duplicateEmptyLines(extendedColumns);
-    extendedColumns = rotateLines(extendedColumns);
-    updateGalaxiesColumns(extendedColumns, galaxies);
-    
+    const translatedMap = translateBaseMap(lines);
+    const barebonesRowMap = getBarebonesMapWithDuplicatedEmptyLines(translatedMap);
+    const barebonesColumnMap = getBarebonesMapWithDuplicatedEmptyLines(getRotatedLines(translatedMap));
+
+    let galaxies = getGalaxies(translatedMap);
+    updateGalaxiesRowNos(barebonesRowMap, galaxies);
+    updateGalaxiesColumnNos(barebonesColumnMap, galaxies);
+
+
     let totalDistance = 0;
     for(let galaxyNo = 0; galaxyNo < galaxies.length; galaxyNo++) {
         for(let galaxyToCompareNo = galaxyNo + 1; galaxyToCompareNo < galaxies.length; galaxyToCompareNo++) {
@@ -29,75 +31,107 @@ function solvePuzzle(lines) {
     return totalDistance;
 }
 
-function getGalaxies(galaxyMap) {
+function getDistanceBetweenGalaxies(galaxy1, galaxy2) {
+    return Math.abs(galaxy1.rowNumber - galaxy2.rowNumber) + Math.abs(galaxy1.columnNumber - galaxy2.columnNumber);
+}
+
+function translateBaseMap(baseMapLines) {
+    //in javaScript you can store different dataTypes in a single array (otherwise i'd just make a "Dot class")
+    let translatedMap = [];
+    let galaxyNo = 0;
+    for(let lineNo = 0; lineNo < baseMapLines.length; lineNo++) {
+        translatedMap.push(baseMapLines[lineNo].split(''));
+        for(let columnNo = 0; columnNo < translatedMap[lineNo].length; columnNo++) {
+            if (translatedMap[lineNo][columnNo] === '#') {
+                translatedMap[lineNo][columnNo] = new Galaxy(galaxyNo);
+                galaxyNo++;
+            }
+        }
+    }
+    return translatedMap;
+}
+
+function getGalaxies(map) {
     let galaxies = [];
-    for(let lineNo = 0; lineNo < galaxyMap.length; lineNo++) {
-        for(let columnNo = 0; columnNo < galaxyMap[lineNo].length; columnNo++) {
-            if (galaxyMap[lineNo][columnNo] === '#') { galaxies.push(new Galaxy(lineNo)); }
+    
+    for(let lineNo = 0; lineNo < map.length; lineNo++) {
+        for(let columnNo = 0; columnNo < map[lineNo].length; columnNo++) {
+            if(typeof map[lineNo][columnNo] === 'object') { galaxies.push(map[lineNo][columnNo]); }
         }
     }
     return galaxies;
 }
 
-function updateGalaxiesColumns(galaxyMap, galaxies) {
-    let galaxyNo = 0;
-    for(let lineNo = 0; lineNo < galaxyMap.length; lineNo++) {
-        for(let columnNo = 0; columnNo < galaxyMap[lineNo].length; columnNo++) {
-            if (galaxyMap[lineNo][columnNo] === '#') {
-                galaxies[galaxyNo].updateColumnNo(columnNo);
-                galaxyNo++;
+function updateGalaxiesRowNos(barebonesRowMap, galaxies) {
+    for(let lineNo = 0; lineNo < barebonesRowMap.length; lineNo++) {
+        for(let columnNo = 0; columnNo < barebonesRowMap[lineNo].length; columnNo++) {
+            if(typeof barebonesRowMap[lineNo][columnNo] === 'object') {
+                const foundGalaxy = barebonesRowMap[lineNo][columnNo];
+                galaxies.find((galaxy) => galaxy.id === foundGalaxy.id).updateRowNo(lineNo);
             }
         }
     }
 }
 
-function duplicateEmptyLines(lines) {
-    let linesLocal = [...lines];
-    for(let i = 0; i < linesLocal.length; i++) {
-        linesLocal[i] = linesLocal[i].replaceAll('.', '');
-        if (!linesLocal[i].includes('#')) {
-            // for(let j = 1; j < 10; j++) {
-                linesLocal.splice(i, 0, linesLocal[i]);
-                i++;
-            // }
+function updateGalaxiesColumnNos(barebonesColumnsMap, galaxies) {
+    for(let lineNo = 0; lineNo < barebonesColumnsMap.length; lineNo++) {
+        for(let columnNo = 0; columnNo < barebonesColumnsMap[lineNo].length; columnNo++) {
+            if(typeof barebonesColumnsMap[lineNo][columnNo] === 'object') {
+                const foundGalaxy = barebonesColumnsMap[lineNo][columnNo];
+                galaxies.find((galaxy) => galaxy.id === foundGalaxy.id).updateColumnNo(lineNo);
+            }
         }
     }
-    deleteDots(linesLocal);
-    return linesLocal;
 }
 
-function deleteDots(lines) {
-    for(let i = 0; i < lines.length; i++) {
-        lines[i] = lines[i].replaceAll('.', '');
-    }
-    return lines;
-}
-
-function rotateLines(lines) {
-    let rotatedLines = [];
+function getRotatedLines(lines) {
     const lineLength = lines[0].length;
+    let rotatedLines = [];
     
-    for(let i = 0; i < lineLength; i++) {
-        let rotatedLine = '';
+    for(let columnNo = 0; columnNo < lineLength; columnNo++) {
+        let rotatedLine = [];
         for(const line of lines) {
-            if (line[i]) { rotatedLine += line[i]; }
-            else { rotatedLine += ' '; }
+            rotatedLine.push(line[columnNo]);
         }
         rotatedLines.push(rotatedLine);
     }
     return rotatedLines;
 }
 
-function getDistanceBetweenGalaxies(galaxy1, galaxy2) {
-    return Math.abs(galaxy1.rowNumber - galaxy2.rowNumber) + Math.abs(galaxy1.columnNumber - galaxy2.columnNumber);
+function getBarebonesMapWithDuplicatedEmptyLines(lines) {
+    //EXPLANATION: array is a reference type, (it would get changed without returning and re-assigning the value) so I need to make a copy of the array (a new reference) that doesn't point to the same spot in memory
+    let linesLocal = [...lines];
+    for(let i = 0; i < linesLocal.length; i++) {
+        if (!arrayIncludesAnObject(linesLocal[i])) {
+            for(let j = 1; j < 1000000; j++) {
+                linesLocal.splice(i, 0, linesLocal[i]);
+                i++;
+                }
+            }
+        }
+    linesLocal = linesLocal.map(subArray =>
+        subArray.filter(element => typeof element === 'object')
+    );
+    return linesLocal;
+}
+
+//NOTE: i could get fancy and extend the array.prototype with an equivalent of this function 'includesObject() -> boolean'
+function arrayIncludesAnObject(array) {
+    for(let i = 0; i < array.length; i++) {
+        if(typeof array[i] === 'object') { return true; }
+    }
+    return false;
 }
 
 class Galaxy {
-    constructor(rowNumber) {
-        this.rowNumber = rowNumber;
+    constructor(id) {
+        this.id = id;
     }
     updateColumnNo(columnNumber) {
         this.columnNumber = columnNumber;
+    }
+    updateRowNo(rowNumber) {
+        this.rowNumber = rowNumber;
     }
 }
 

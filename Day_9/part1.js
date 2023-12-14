@@ -26,6 +26,7 @@ class Speciment {
         this.nextValue = this.getNextValue();
     }
     getHistoryLevels() {
+        //EXPLANATION: array is a reference type, (it would get changed without returning and re-assigning the value) so I need to make a copy of the array (a new reference) that doesn't point to the same spot in memory
         let changesInHistoryUpper = [...this.historyValues];
         let changesInHistoryInner = [];
         let historyLevels = [];
