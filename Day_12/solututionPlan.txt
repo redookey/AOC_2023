@@ -11,14 +11,17 @@
 
 2. save up possible variations for each number
     - take the length of the zone and subtract from it the length of the number -> thats the number of variations
-    - for each variation record its start and end (maybe a "for cycle" the length of the number of variations -> where the first loop is the [start = starting coordinate; end = starting coordinate + length of the number - 1 (the minus one is for the starting position);], and each loop I add 1 to the start and the end alike)
-        - 2:
-            -> [zone.length = 6]
-            -> ["wiggleSpace" = 4 (zone.length - number.value)]
-            -> possibleVariations[0] = { start: 4, end: 5 }
-            -> possibleVariations[1] = { start: 5, end: 6 }
-            -> possibleVariations[2] = { start: 6, end: 7 }
-            -> possibleVariations[3] = { start: 8, end: 9 }
+    - for each variation, record it's start and it's end
+        -> maybe a "for cycle" the length of the number of variations
+        -> where the first loop is the [start = "starting coordinate"; end = "starting coordinate" + "length of the number" - 1 (the minus one is for the starting position)]
+        -> and each loop add [1] to the start and the end alike
+    - example for the number 2:
+        -> [zone.length = 6]
+        -> ["wiggleSpace" = 4 (zone.length - number.value)]
+        -> possibleVariations[0] = { start: 4, end: 5 }
+        -> possibleVariations[1] = { start: 5, end: 6 }
+        -> possibleVariations[2] = { start: 6, end: 7 }
+        -> possibleVariations[3] = { start: 8, end: 9 }
 
 3. filter the possibleVariations based on the symbols in input
     - make a copy of the input
@@ -34,6 +37,6 @@
             -> log each combination (compatible or not => i can tell them apart by also filling in a boolean 'compatible' property)
             -> make a "hash" created out of the sequence of all starts and ends
             -> [#.#.### 1,1,3] would have the hash of: [002246]
-            -> if a combination of this hash is found in the combinations array, dont run the check -> continue in the loop
+            -> if a combination of this hash is found in the combinations array, dont run the check -> continue in the 
 
 5. sum up compatibleCombinations.length for each line
