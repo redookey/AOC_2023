@@ -2,12 +2,15 @@
 
 1. establish zones
     - analyze zone of each number (from left to right)
-    - start of a zone -> sum up previous numbers + add 1 for each of them (the spaces between)
-    - end of a zone -> sum up succeeding numbers + add 1 for each of them (the spaces between) (those two look pretty similiar - ambigous function maybe?)
-        -> zero based, inclusive
-        - 3 has a zone of 0 - 6  (0 -> aka start)
-        - 2 has a zone of 4 - 9
-        - 1 has a zone of 7 - 11 (11 -> aka end -> aka codeLine.length)
+    - start of a zone
+        -> sum up previous numbers + add 1 for each of them (the spaces between)
+    - end of a zone
+        -> take the symbolRow.length and subtract the following number:
+        -> sum up succeeding numbers + add 1 for each of them (the spaces between) (those two look pretty similiar - ambigous function maybe?)
+    -> zero based, inclusive
+    - 3 has a zone of 0 - 6  (0 -> aka start)
+    - 2 has a zone of 4 - 9
+    - 1 has a zone of 7 - 11 (11 -> aka end -> aka codeLine.length)
 
 2. save up possible variations for each number
     - take the length of the zone and subtract from it the length of the number -> thats the number of variations
