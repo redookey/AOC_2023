@@ -15,7 +15,7 @@ function main() {
 function solvePuzzle(lines) {
     let conditionRecords = getConditionRecords(lines);
     
-    // console.log();
+    console.log();
 }
 
 function getConditionRecords(lines) {
@@ -54,8 +54,8 @@ class Number {
     }
     initZone() {
         //up my reduce-game? i could define a function that i would pass in as a callback (reduce redunduncy - haha reduce; i know.)
-        let zoneStart = this.precedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.precedingNumbers.length;
-        let zoneEnd = this.symbolRowLength - this.succeedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.succeedingNumbers.length;
+        let zoneStart = (this.precedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.precedingNumbers.length);
+        let zoneEnd = this.symbolRowLength - (this.succeedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.succeedingNumbers.length);
         this.zone = {
             startIndex: zoneStart,
             endIndex: zoneEnd - 1,
@@ -63,12 +63,5 @@ class Number {
         }
     }
 }
-
-// class Zone {
-//     constructor(start, end) {
-//         this.start = start;
-//         this.end = end;
-//     }
-// }
 
 main();

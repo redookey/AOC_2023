@@ -24,7 +24,9 @@
         -> possibleVariations[0] = { start: 4, end: 5 }
         -> possibleVariations[1] = { start: 5, end: 6 }
         -> possibleVariations[2] = { start: 6, end: 7 }
-        -> possibleVariations[3] = { start: 8, end: 9 }
+        -> possibleVariations[3] = { start: 7, end: 8 }
+        -> possibleVariations[4] = { start: 8, end: 9 }
+        -->wiggleSpace + 1 = no of variations
 
 3. filter the possibleVariations based on the symbols in input
     - make a copy of the input
