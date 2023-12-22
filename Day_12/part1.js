@@ -45,23 +45,41 @@ class ConditionRecord {
 }
 
 class Number {
-    constructor(value, precedingNumbers, succeedingNumbers, symbolRowLength) {
+    constructor(value, precedingNumbers, succeedingNumbers, symbolRow) {
         this.value = value;
         this.precedingNumbers = [...precedingNumbers];
         this.succeedingNumbers = [...succeedingNumbers];
-        this.symbolRowLength = symbolRowLength;
+        this.symbolRow = symbolRow;
         this.initZone();
     }
     initZone() {
         //up my reduce-game? i could define a function that i would pass in as a callback (reduce redunduncy - haha reduce; i know.)
         let zoneStart = (this.precedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.precedingNumbers.length);
-        let zoneEnd = this.symbolRowLength - (this.succeedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.succeedingNumbers.length);
+        let zoneEnd = this.symbolRow.length - (this.succeedingNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0) + this.succeedingNumbers.length);
         this.zone = {
             startIndex: zoneStart,
             endIndex: zoneEnd - 1,
-            wiggleSpace: (zoneEnd - zoneStart) - this.value
+            wiggleSpace: (zoneEnd - zoneStart) - this.value,
+            numberOfCombinations: wiggleSpace + 1
         }
     }
+    initCombinations() {
+        this.combinations = {};
+        for(let i = 0; i < this.zone.numberOfCombinations; i++) {
+            let symbolRowVariation = this.symbolRow;
+            symbolRowVariation.splice(this.zone.startIndex, this.value, getHashtagString(this.value));
+            this.combinations.push(symbolRowVariation);
+        }
+    }
+    val
+}
+
+function getHashtagString(length) {
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += '#';
+    }
+    return result;
 }
 
 main();
