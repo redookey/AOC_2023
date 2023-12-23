@@ -38,8 +38,13 @@ class ConditionRecord {
         let numbers = [];
         numbers = this.numberFormat.split(',');
         for(let i = 0; i < numbers.length; i++) {
-            this.numbers.push(new Number(parseInt(numbers[i]), numbers.slice(0, i).map(element => parseInt(element)), numbers.slice(i + 1, numbers.length).map(element => parseInt(element)), this.symbolFormat.length));
+            this.numbers.push(new Number(parseInt(numbers[i]), numbers.slice(0, i).map(element => parseInt(element)), numbers.slice(i + 1, numbers.length).map(element => parseInt(element)), this.symbolFormat));
         }
+    }
+    initCompatibleVariations() {
+        this.numbers
+
+        //CONTINUE HERE
     }
 
 }
@@ -51,6 +56,7 @@ class Number {
         this.succeedingNumbers = [...succeedingNumbers];
         this.symbolRow = symbolRow;
         this.initZone();
+        this.initCombinations();
     }
     initZone() {
         //up my reduce-game? i could define a function that i would pass in as a callback (reduce redunduncy - haha reduce; i know.)
@@ -59,19 +65,26 @@ class Number {
         this.zone = {
             startIndex: zoneStart,
             endIndex: zoneEnd - 1,
-            wiggleSpace: (zoneEnd - zoneStart) - this.value,
-            numberOfCombinations: wiggleSpace + 1
+            numberOfCombinations: (zoneEnd - zoneStart) - this.value + 1
+            //wiggleSpace: (zoneEnd - zoneStart) - this.value,
+            // numberOfCombinations: wiggleSpace + 1
         }
     }
     initCombinations() {
-        this.combinations = {};
+        this.combinations = [];
         for(let i = 0; i < this.zone.numberOfCombinations; i++) {
-            let symbolRowVariation = this.symbolRow;
-            symbolRowVariation.splice(this.zone.startIndex, this.value, getHashtagString(this.value));
-            this.combinations.push(symbolRowVariation);
+            let symbolRowVariation = [...this.symbolRow];
+            let sequenceStartIndex = this.zone.startIndex + i;
+            symbolRowVariation.splice(sequenceStartIndex, this.value, getHashtagString(this.value));
+            symbolRowVariation = symbolRowVariation.join('');
+           if (this.combinationIsValid(symbolRowVariation, sequenceStartIndex, sequenceStartIndex + this.value - 1)) {
+               this.combinations.push(symbolRowVariation);
+           }
         }
     }
-    val
+    combinationIsValid(symbolRowVariation, sequenceStartIndex, sequenceEndIndex) {
+        return (symbolRowVariation[sequenceStartIndex - 1] !== '#') && (symbolRowVariation[sequenceEndIndex + 1] !== '#');
+    }
 }
 
 function getHashtagString(length) {

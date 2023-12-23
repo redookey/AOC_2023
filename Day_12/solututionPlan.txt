@@ -32,7 +32,7 @@
 3. filter the possibleVariations based on the symbols in input
     - make a copy of the input
     - fill the positions in the possibleVariation with "#"
-    - check if it's a valid variation (check that the surroundings symbols of the start and end positions are not "#" -> [start -1, end - 1])
+    - check if it's a valid variation (check that the surroundings symbols of the start and end positions are not "#" -> [start -1, end + 1])
     - if valid, add to a new array validCombinations (haven't decided on the "variations/combinations" thing)
 
 4. once each number has it's validCombinations list, run a compatibility check between individual combinations
