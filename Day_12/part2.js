@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data.split(`\n`);
 }
 
@@ -16,10 +16,20 @@ function solvePuzzle(lines) {
     let conditionRecords = getConditionRecords(lines);
     let result = 0;
     for(const conditionRecord of conditionRecords) {
-        result += conditionRecord.compatibleVariations.length;
+        result += conditionRecord.possibleVariations.length;
     } 
-    
+    printResult(conditionRecords);
     return result;
+}
+
+function printResult(conditionRecords) {
+    let result = [];
+    for(const conditionRecord of conditionRecords) {
+        for(const variation of conditionRecord.possibleVariations) {
+            result.push(variation.replaceAll('$', '#'));
+        }
+    }
+    fs.writeFileSync(__dirname + '/testNew.txt', result.join(`\n`));
 }
 
 function getConditionRecords(lines) {
@@ -53,8 +63,7 @@ class ConditionRecord {
         this.symbolFormat = symbolFormat;
         this.numberFormat = numberFormat;
         this.numbers = this.getNumbers();
-        this.compatibleVariations = this.getCompatibleVariations();
-        console.log();
+        this.possibleVariations = this.getPossibleVariations();
     }
 
     getNumbers() {
@@ -67,7 +76,7 @@ class ConditionRecord {
         return result;
     }
 
-    getCompatibleVariations() {
+    getPossibleVariations() {
         let variations = [];
         let currentNumberIndex = 0;
 
@@ -104,10 +113,12 @@ class ConditionRecord {
                     let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet);
                     if (completedSymbolRow) {
                         completedSymbolRow = completedSymbolRow.join('');
-                        if (!variations.find(value => value === completedSymbolRow))  {
-                            variations.push(completedSymbolRow);
+                        if (!variations.find(value => value === completedSymbolRow)) {
+                            if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
+                                variations.push(completedSymbolRow);
+                            }
                         }
-                    }  
+                    }
                 }
                 currentNumberIndex--;
             }
@@ -116,12 +127,42 @@ class ConditionRecord {
     }
 }
 
+function symbolRowVariationIsValid(symbolRowToValidate, numbersToValidateAgainst) {
+    return (numbersToValidateAgainst === getNumbersFormat(symbolRowToValidate));
+}
+
+function getNumbersFormat(string) {
+    let numbers = [];
+    for(let position = 0; position < string.length; position++) {
+        if (isHashtag(string[position])) {
+            let number = getNumber(string, position);
+            numbers.push(number);
+            position += number;
+        }
+    }
+    return numbers.join(',');
+}
+
+function getNumber(str, position) {
+    let result = 0;
+    for(let i = position; isHashtag(str[i]); i++) {
+        result ++;
+    }
+    return result;
+}
+
+function isHashtag(char) {
+    return (char === '$');  //TODO
+}
+
 function tryHashtagingAtCoordinates(symbolRow, coordinateSet) {
     let localSymbolRow = symbolRow.map(value => value);
-    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
+    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#') && (localSymbolRow[coordinateSet.startIndex - 1] !== '$') && (localSymbolRow[coordinateSet.endIndex + 1] !== '$')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
-            if (localSymbolRow[i] !== '#') {    //this is useless, BUT it is a part of a solution to the current problem
-                localSymbolRow.splice(i, 1, '#');
+            if (localSymbolRow[i] !== '$') {
+                localSymbolRow.splice(i, 1, '$');
+            } else {
+                return undefined;
             }
         }
         return localSymbolRow;
@@ -206,3 +247,5 @@ function getHashtagString(length) {
 }
 
 main();
+
+module.exports.main = main;
