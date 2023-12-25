@@ -18,18 +18,8 @@ function solvePuzzle(lines) {
     for(const conditionRecord of conditionRecords) {
         result += conditionRecord.possibleVariations.length;
     } 
-    printResult(conditionRecords);
+    
     return result;
-}
-
-function printResult(conditionRecords) {
-    let result = [];
-    for(const conditionRecord of conditionRecords) {
-        for(const variation of conditionRecord.possibleVariations) {
-            result.push(variation.replaceAll('$', '#'));
-        }
-    }
-    fs.writeFileSync(__dirname + '/testNew.txt', result.join(`\n`));
 }
 
 function getConditionRecords(lines) {
@@ -118,7 +108,7 @@ class ConditionRecord {
                                 variations.push(completedSymbolRow);
                             }
                         }
-                    }
+                    }  
                 }
                 currentNumberIndex--;
             }
@@ -152,17 +142,15 @@ function getNumber(str, position) {
 }
 
 function isHashtag(char) {
-    return (char === '$');  //TODO
+    return (char === '#');
 }
 
 function tryHashtagingAtCoordinates(symbolRow, coordinateSet) {
     let localSymbolRow = symbolRow.map(value => value);
-    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#') && (localSymbolRow[coordinateSet.startIndex - 1] !== '$') && (localSymbolRow[coordinateSet.endIndex + 1] !== '$')) {
+    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
-            if (localSymbolRow[i] !== '$') {
-                localSymbolRow.splice(i, 1, '$');
-            } else {
-                return undefined;
+            if (localSymbolRow[i] !== '#') {    //this is useless, BUT it is a part of a solution to the current problem
+                localSymbolRow.splice(i, 1, '#');
             }
         }
         return localSymbolRow;
@@ -247,5 +235,3 @@ function getHashtagString(length) {
 }
 
 main();
-
-module.exports.main = main;
