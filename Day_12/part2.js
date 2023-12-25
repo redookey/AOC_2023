@@ -17,9 +17,19 @@ function solvePuzzle(lines) {
     let result = 0;
     for(const conditionRecord of conditionRecords) {
         result += conditionRecord.possibleVariations.length;
-    } 
-    
+    }
+    printResult(conditionRecords);
     return result;
+}
+
+function printResult(conditionRecords) {
+    let result = [];
+    for(const conditionRecord of conditionRecords) {
+        for(const variation of conditionRecord.possibleVariations) {
+            result.push(variation.replaceAll('$', '#'));
+        }
+    }
+    fs.writeFileSync(__dirname + '/testNew.txt', result.join(`\n`));
 }
 
 function getConditionRecords(lines) {
@@ -79,11 +89,12 @@ class ConditionRecord {
 
         while(currentNumberIndex !== -1) {
             let currentNumber = this.numbers[currentNumberIndex];
+            let nextNumber = this.numbers[currentNumberIndex + 1];
             
-            if (this.numbers[this.numbers.indexOf(currentNumber) + 1]) {
+            if (nextNumber) {
                 if (currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex + 1]) {
-                    if (currentNumber.currentCoordinateSetIndex !== -1) {
-                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex]);
+                    if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
+                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
                     }
                     currentNumber.currentCoordinateSetIndex++;
 
@@ -91,6 +102,7 @@ class ConditionRecord {
                     if (newlyUpdatedSymbolRow) {
                         checkpointSymbolRow = newlyUpdatedSymbolRow.map(value => value);
                         currentNumberIndex++;
+                        currentNumber.lastUsedCoordinateIndex = currentNumber.currentCoordinateSetIndex;
                     }
                 }
                 else {
@@ -235,3 +247,5 @@ function getHashtagString(length) {
 }
 
 main();
+
+module.exports.main = main;
