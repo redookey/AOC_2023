@@ -18,8 +18,19 @@ function solvePuzzle(lines) {
     for(const conditionRecord of conditionRecords) {
         result += conditionRecord.compatibleVariations.length;
     } 
+    printResult(conditionRecords);
     
     return result;
+}
+
+function printResult(conditionRecords) {
+    let result = [];
+    for(const conditionRecord of conditionRecords) {
+        for(const variation of conditionRecord.compatibleVariations) {
+            result.push(variation);
+        }
+    }
+    fs.writeFileSync(__dirname + '/testOriginal.txt', result.join(`\n`));
 }
 
 function getConditionRecords(lines) {
@@ -202,3 +213,5 @@ function initArray(length) {
 }
 
 main();
+
+module.exports.main = main;
