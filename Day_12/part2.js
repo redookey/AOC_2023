@@ -50,10 +50,11 @@ function getConditionRecords(lines) {
 
 class ConditionRecord {
     constructor(symbolFormat, numberFormat) {
-         this.symbolFormat = symbolFormat;
+        this.symbolFormat = symbolFormat;
         this.numberFormat = numberFormat;
         this.numbers = this.getNumbers();
         this.compatibleVariations = this.getCompatibleVariations();
+        console.log();
     }
 
     getNumbers() {
@@ -66,11 +67,11 @@ class ConditionRecord {
         return result;
     }
 
-    getAllVariationSets() {
+    getCompatibleVariations() {
         let variations = [];
         let currentNumberIndex = 0;
 
-        this.numbers.sort(bubbleSortByNumberOfCombinations);
+        this.numbers.sort(bubbleSortByNumberOfCoordinateSets);
         this.numbers.forEach(value => value.currentCoordinateSetIndex = -1);
         
         let baseSymbolRow = this.symbolFormat.split('');
@@ -80,9 +81,13 @@ class ConditionRecord {
         while(currentNumberIndex !== -1) {
             let currentNumber = this.numbers[currentNumberIndex];
             
-            if (currentNumber.succeedingNumbers[0]) {
+            if (this.numbers[this.numbers.indexOf(currentNumber) + 1]) {
                 if (currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex + 1]) {
+                    if (currentNumber.currentCoordinateSetIndex !== -1) {
+                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex]);
+                    }
                     currentNumber.currentCoordinateSetIndex++;
+
                     let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex]);
                     if (newlyUpdatedSymbolRow) {
                         checkpointSymbolRow = newlyUpdatedSymbolRow.map(value => value);
@@ -96,10 +101,13 @@ class ConditionRecord {
             }
             else {
                 for(const coordinateSet of currentNumber.coordinateSets) {
-                    completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet);
+                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet);
                     if (completedSymbolRow) {
-                        variations.push(completedSymbolRow.join(''));
-                    }
+                        completedSymbolRow = completedSymbolRow.join('');
+                        if (!variations.find(value => value === completedSymbolRow))  {
+                            variations.push(completedSymbolRow);
+                        }
+                    }  
                 }
                 currentNumberIndex--;
             }
@@ -112,13 +120,22 @@ function tryHashtagingAtCoordinates(symbolRow, coordinateSet) {
     let localSymbolRow = symbolRow.map(value => value);
     if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
-            if (localSymbolRow[i] !== '#') {
+            if (localSymbolRow[i] !== '#') {    //this is useless, BUT it is a part of a solution to the current problem
                 localSymbolRow.splice(i, 1, '#');
             }
         }
-        return symbolRow;
+        return localSymbolRow;
     }
     return undefined;
+}
+
+function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
+    for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
+        let originalSymbolIndex = 0;
+        let originalSymbol = coordinateSet.originalSymbols[originalSymbolIndex]
+        symbolRow.splice(i, 1, originalSymbol);
+        originalSymbolIndex++;
+    }
 }
 
 class Number {
@@ -137,14 +154,14 @@ class Number {
         return {
             startIndex: zoneStart,
             endIndex: zoneEnd - 1,
-            numberOfCombinations: (zoneEnd - zoneStart) - this.value + 1
+            numberOfCoordinateSets: (zoneEnd - zoneStart) - this.value + 1
             //wiggleSpace: (zoneEnd - zoneStart) - this.value,
-            // numberOfCombinations: wiggleSpace + 1
+            // numberOfCoordinateSets: wiggleSpace + 1
         };
     }
     getCoordinateSets() {
         let result = [];
-        for(let i = 0; i < this.zone.numberOfCombinations; i++) {
+        for(let i = 0; i < this.zone.numberOfCoordinateSets; i++) {
             let symbolRowVariation = [...this.symbolRow];
             let sequenceStartIndex = this.zone.startIndex + i;
             let sequenceEndIndex = sequenceStartIndex + this.value - 1;
@@ -156,7 +173,8 @@ class Number {
            if (coordinateSetIsValid(symbolRowVariation, sequenceStartIndex, sequenceEndIndex)) {
                 let coordinateSet = {
                     startIndex: sequenceStartIndex,
-                    endIndex: sequenceEndIndex
+                    endIndex: sequenceEndIndex,
+                    originalSymbols: removedSymbols.join('')
                 } 
                result.push(coordinateSet);
            }
@@ -169,10 +187,10 @@ function coordinateSetIsValid(symbolRowVariation, sequenceStartIndex, sequenceEn
     return (symbolRowVariation[sequenceStartIndex - 1] !== '#') && (symbolRowVariation[sequenceEndIndex + 1] !== '#');
 }
 
-function bubbleSortByNumberOfCombinations(a, b) {
-    if (a.combinations.length > b.combinations.length) {
+function bubbleSortByNumberOfCoordinateSets(a, b) {
+    if (a.coordinateSets.length > b.coordinateSets.length) {
         return 1;
-    } else if (a.combinations.length < b.combinations.length) {
+    } else if (a.coordinateSets.length < b.coordinateSets.length) {
         return -1;
     } else {
         return 0;
