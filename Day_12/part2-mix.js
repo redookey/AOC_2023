@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data.split(`\n`);
 }
 
@@ -32,31 +32,31 @@ function printResult(conditionRecords) {
     fs.writeFileSync(__dirname + '/testNew.txt', result.join(`\n`));
 }
 
-// function getConditionRecords(lines) {
-//     let conditionRecords = [];
-//     for(const line of lines) {
-//         let splitLine = line.split(' ');
-//         conditionRecords.push(new ConditionRecord(splitLine[0], splitLine[1]));
-//     }
-//     return conditionRecords;
-// }
-
 function getConditionRecords(lines) {
     let conditionRecords = [];
     for(const line of lines) {
         let splitLine = line.split(' ');
-        conditionRecords.push(new ConditionRecord(getCopiesWithSeperator(splitLine[0], '?', 4), getCopiesWithSeperator(splitLine[1], ',', 4)));
+        conditionRecords.push(new ConditionRecord(splitLine[0], splitLine[1]));
     }
     return conditionRecords;
 }
 
-function getCopiesWithSeperator(stringToCopy, seperator, numberOfCopies) {
-    let result = stringToCopy;
-    for(let i = 0; i < numberOfCopies; i++) {
-        result = result.concat(seperator, stringToCopy);
-    }
-    return result;
-}
+// function getConditionRecords(lines) {
+//     let conditionRecords = [];
+//     for(const line of lines) {
+//         let splitLine = line.split(' ');
+//         conditionRecords.push(new ConditionRecord(getCopiesWithSeperator(splitLine[0], '?', 4), getCopiesWithSeperator(splitLine[1], ',', 4)));
+//     }
+//     return conditionRecords;
+// }
+
+// function getCopiesWithSeperator(stringToCopy, seperator, numberOfCopies) {
+//     let result = stringToCopy;
+//     for(let i = 0; i < numberOfCopies; i++) {
+//         result = result.concat(seperator, stringToCopy);
+//     }
+//     return result;
+// }
 
 class ConditionRecord {
     constructor(symbolFormat, numberFormat) {
@@ -100,9 +100,7 @@ class ConditionRecord {
             if (nextNumber) {
                 if (currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex + 1]) {
                     currentNumber.currentCoordinateSetIndex++;
-                    if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
-                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
-                    }
+                    reverseChangesAtCoordinatesIfNecessary(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
                     
                     let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat);
                     if (newlyUpdatedSymbolRow) {
@@ -115,9 +113,7 @@ class ConditionRecord {
                     currentNumberIndex--;
                     currentNumber.currentCoordinateSetIndex = -1;
                     currentlyUsedNumbers.pop();
-                    if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
-                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
-                    }
+                    reverseChangesAtCoordinatesIfNecessary(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
                     currentNumber.lastUsedCoordinateIndex = null;
                 }
             }
@@ -199,7 +195,8 @@ function isSymbolToLookFor(char, symbolToLookFor) {
     return (char === symbolToLookFor);
 }
 
-function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
+function reverseChangesAtCoordinatesIfNecessary(symbolRow, coordinateSet) {
+    if (!coordinateSet) { return; }
     let originalSymbolIndex = 0;
     for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
         let originalSymbol = coordinateSet.originalSymbols[originalSymbolIndex]
