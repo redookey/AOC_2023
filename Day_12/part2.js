@@ -171,8 +171,8 @@ function tryHashtagingAtCoordinates(symbolRow, coordinateSet) {
 }
 
 function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
+    let originalSymbolIndex = 0;
     for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
-        let originalSymbolIndex = 0;
         let originalSymbol = coordinateSet.originalSymbols[originalSymbolIndex]
         symbolRow.splice(i, 1, originalSymbol);
         originalSymbolIndex++;
