@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
     return data.split(`\n`);
 }
 
@@ -71,7 +71,7 @@ class ConditionRecord {
         let numbers = [];
         numbers = this.numberFormat.split(',');
         for(let i = 0; i < numbers.length; i++) {
-            result.push(new Number(parseInt(numbers[i]), numbers.slice(0, i).map(element => parseInt(element)), numbers.slice(i + 1, numbers.length).map(element => parseInt(element)), this.symbolFormat));
+            result.push(new Number(parseInt(numbers[i]), numbers.slice(0, i).map(element => parseInt(element)), numbers.slice(i + 1, numbers.length).map(element => parseInt(element)), this.symbolFormat, i));
         }
         return result;
     }
@@ -79,26 +79,32 @@ class ConditionRecord {
     getPossibleVariations() {
         let variations = [];
         let currentNumberIndex = 0;
+        let currentlyUsedNumbers = [];
 
-        // this.numbers.sort(bubbleSortByNumberOfCoordinateSets);
+        this.numbers.sort(bubbleSortByNumberOfCoordinateSets);
         this.numbers.forEach(value => value.currentCoordinateSetIndex = -1);
         
         let baseSymbolRow = this.symbolFormat.split('');
         let checkpointSymbolRow = baseSymbolRow.map(value => value);
         
-
+        
+        
         while(currentNumberIndex !== -1) {
             let currentNumber = this.numbers[currentNumberIndex];
-            // let nextNumber = this.numbers[currentNumberIndex + 1];
+            let nextNumber = this.numbers[currentNumberIndex + 1];
+            if (!currentlyUsedNumbers.includes(currentNumber)) {
+                currentlyUsedNumbers.push(currentNumber);   
+            }
+            let currentNumberFormat = getNumberFormatForNumbers(currentlyUsedNumbers);
             
-            if (currentNumber.succeedingNumbers[0]) {
+            if (nextNumber) {
                 if (currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex + 1]) {
                     if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
                         reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
                     }
                     currentNumber.currentCoordinateSetIndex++;
-
-                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex]);
+                    
+                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat);
                     if (newlyUpdatedSymbolRow) {
                         checkpointSymbolRow = newlyUpdatedSymbolRow.map(value => value);
                         currentNumberIndex++;
@@ -108,35 +114,62 @@ class ConditionRecord {
                 else {
                     currentNumberIndex--;
                     currentNumber.currentCoordinateSetIndex = -1;
+                    currentlyUsedNumbers.pop();
                 }
             }
             else {
                 for(const coordinateSet of currentNumber.coordinateSets) {
-                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet);
+                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat);
                     if (completedSymbolRow) {
                         completedSymbolRow = completedSymbolRow.join('');
                         if (!variations.find(value => value === completedSymbolRow)) {
-                            if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
+                            // if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
                                 variations.push(completedSymbolRow);
-                            }
+                            // }
                         }
                     }  
                 }
                 currentNumberIndex--;
+                currentlyUsedNumbers.pop();
             }
         }
         return variations;
     }
 }
 
-function symbolRowVariationIsValid(symbolRowToValidate, numbersToValidateAgainst) {
-    return (numbersToValidateAgainst === getNumbersFormat(symbolRowToValidate));
+function getNumberFormatForNumbers(numbers) {
+    let numberFormat = '';
+    let localNumbers = numbers.map(value => value).sort(sortNumbersByOriginalIndex);
+    for(let i = 0; i < localNumbers.length; i++) {
+        numberFormat += localNumbers[i].value;
+        if (localNumbers[i + 1]) { numberFormat += ','; }
+    }
+    return numberFormat;
+}
+
+function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst) {
+    let localSymbolRow = symbolRow.map(value => value);
+    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
+        for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
+            if (localSymbolRow[i] !== '.') {
+                localSymbolRow.splice(i, 1, '$');
+            } else { return undefined; }
+        }
+        if (symbolRowVariationIsValid(localSymbolRow.join(''), numberFormatToValidateAgainst)) {
+            return localSymbolRow;
+        }
+    }
+    return undefined;
+}
+
+function symbolRowVariationIsValid(symbolRowToValidate, numberFormatToValidateAgainst) {
+    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate));
 }
 
 function getNumbersFormat(string) {
     let numbers = [];
     for(let position = 0; position < string.length; position++) {
-        if (isHashtag(string[position])) {
+        if (isDollarSign(string[position])) {
             let number = getNumber(string, position);
             numbers.push(number);
             position += number;
@@ -147,27 +180,14 @@ function getNumbersFormat(string) {
 
 function getNumber(str, position) {
     let result = 0;
-    for(let i = position; isHashtag(str[i]); i++) {
+    for(let i = position; isDollarSign(str[i]); i++) {
         result ++;
     }
     return result;
 }
 
-function isHashtag(char) {
-    return (char === '#');
-}
-
-function tryHashtagingAtCoordinates(symbolRow, coordinateSet) {
-    let localSymbolRow = symbolRow.map(value => value);
-    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
-        for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
-            if (localSymbolRow[i] !== '#') {    //this is useless, BUT it is a part of a solution to the current problem
-                localSymbolRow.splice(i, 1, '#');
-            }
-        }
-        return localSymbolRow;
-    }
-    return undefined;
+function isDollarSign(char) {
+    return (char === '$');
 }
 
 function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
@@ -180,11 +200,12 @@ function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
 }
 
 class Number {
-    constructor(value, precedingNumbers, succeedingNumbers, symbolRow) {
+    constructor(value, precedingNumbers, succeedingNumbers, symbolRow, originalIndex) {
         this.value = value;
         this.precedingNumbers = [...precedingNumbers];
         this.succeedingNumbers = [...succeedingNumbers];
         this.symbolRow = symbolRow;
+        this.originalIndex = originalIndex; //TODO parseInt?
         this.zone = this.getZone();
         this.coordinateSets = this.getCoordinateSets();
     }
@@ -229,13 +250,15 @@ function coordinateSetIsValid(symbolRowVariation, sequenceStartIndex, sequenceEn
 }
 
 function bubbleSortByNumberOfCoordinateSets(a, b) {
-    if (a.coordinateSets.length > b.coordinateSets.length) {
-        return 1;
-    } else if (a.coordinateSets.length < b.coordinateSets.length) {
-        return -1;
-    } else {
-        return 0;
-    }
+    if (a.coordinateSets.length > b.coordinateSets.length) { return 1; }
+    else if (a.coordinateSets.length < b.coordinateSets.length) { return -1; }
+    else {  return 0; }
+}
+
+function sortNumbersByOriginalIndex(a, b) {
+    if (a.originalIndex > b.originalIndex) { return 1; }
+    else if (a.originalIndex < b.originalIndex) { return -1; }
+    else {  return 0; }
 }
 
 function getHashtagString(length) {
