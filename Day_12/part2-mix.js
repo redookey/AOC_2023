@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
     return data.split(`\n`);
 }
 
@@ -104,7 +104,7 @@ class ConditionRecord {
                     }
                     currentNumber.currentCoordinateSetIndex++;
                     
-                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat);
+                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat, '$');
                     if (newlyUpdatedSymbolRow) {
                         checkpointSymbolRow = newlyUpdatedSymbolRow.map(value => value);
                         currentNumberIndex++;
@@ -119,13 +119,13 @@ class ConditionRecord {
             }
             else {
                 for(const coordinateSet of currentNumber.coordinateSets) {
-                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat);
+                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat, '#');
                     if (completedSymbolRow) {
                         completedSymbolRow = completedSymbolRow.join('');
                         if (!variations.find(value => value === completedSymbolRow)) {
-                            // if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
+                            //  if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
                                 variations.push(completedSymbolRow);
-                            // }
+                            //  }
                         }
                     }  
                 }
@@ -147,7 +147,7 @@ function getNumberFormatForNumbers(numbers) {
     return numberFormat;
 }
 
-function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst) {
+function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst, symbol) {
     let localSymbolRow = symbolRow.map(value => value);
     if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
@@ -155,21 +155,21 @@ function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToVali
                 localSymbolRow.splice(i, 1, '$');
             } else { return undefined; }
         }
-        if (symbolRowVariationIsValid(localSymbolRow.join(''), numberFormatToValidateAgainst)) {
+        if (symbolRowVariationIsValid(localSymbolRow.join(''), numberFormatToValidateAgainst, symbol)) {
             return localSymbolRow;
         }
     }
     return undefined;
 }
 
-function symbolRowVariationIsValid(symbolRowToValidate, numberFormatToValidateAgainst) {
-    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate));
+function symbolRowVariationIsValid(symbolRowToValidate, numberFormatToValidateAgainst, symbol) {
+    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate, symbol));
 }
 
-function getNumbersFormat(string) {
+function getNumbersFormat(string, symbol) {
     let numbers = [];
     for(let position = 0; position < string.length; position++) {
-        if (isDollarSign(string[position])) {
+        if (isSymbol(string[position], symbol)) {
             let number = getNumber(string, position);
             numbers.push(number);
             position += number;
@@ -178,16 +178,16 @@ function getNumbersFormat(string) {
     return numbers.join(',');
 }
 
-function getNumber(str, position) {
+function getNumber(str, position, symbol) {
     let result = 0;
-    for(let i = position; isDollarSign(str[i]); i++) {
+    for(let i = position; isSymbol(str[i], symbol); i++) {
         result ++;
     }
     return result;
 }
 
-function isDollarSign(char) {
-    return (char === '$');
+function isSymbol(char, symbol) {
+    return (char === symbol);
 }
 
 function reverseChangesAtCoordinates(symbolRow, coordinateSet) {

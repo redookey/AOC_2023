@@ -1,6 +1,6 @@
 const fs = require('fs');
 const originalVersion = require('./part1');
-const newVersion = require('./part2');
+const newVersion = require('./part2-mix');
 
 function extractLinesFromInputFile(fileName) {
     const data = fs.readFileSync(__dirname + '/' + fileName, 'utf8');
