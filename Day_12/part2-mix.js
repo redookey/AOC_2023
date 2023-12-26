@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 function extractLinesFromInputFile() {
-    const data = fs.readFileSync(__dirname + '/input.txt', 'utf8');
+    const data = fs.readFileSync(__dirname + '/testInput.txt', 'utf8');
     return data.split(`\n`);
 }
 
@@ -32,31 +32,31 @@ function printResult(conditionRecords) {
     fs.writeFileSync(__dirname + '/testNew.txt', result.join(`\n`));
 }
 
-function getConditionRecords(lines) {
-    let conditionRecords = [];
-    for(const line of lines) {
-        let splitLine = line.split(' ');
-        conditionRecords.push(new ConditionRecord(splitLine[0], splitLine[1]));
-    }
-    return conditionRecords;
-}
-
 // function getConditionRecords(lines) {
 //     let conditionRecords = [];
 //     for(const line of lines) {
 //         let splitLine = line.split(' ');
-//         conditionRecords.push(new ConditionRecord(getCopiesWithSeperator(splitLine[0], '?', 4), getCopiesWithSeperator(splitLine[1], ',', 4)));
+//         conditionRecords.push(new ConditionRecord(splitLine[0], splitLine[1]));
 //     }
 //     return conditionRecords;
 // }
 
-// function getCopiesWithSeperator(stringToCopy, seperator, numberOfCopies) {
-//     let result = stringToCopy;
-//     for(let i = 0; i < numberOfCopies; i++) {
-//         result = result.concat(seperator, stringToCopy);
-//     }
-//     return result;
-// }
+function getConditionRecords(lines) {
+    let conditionRecords = [];
+    for(const line of lines) {
+        let splitLine = line.split(' ');
+        conditionRecords.push(new ConditionRecord(getCopiesWithSeperator(splitLine[0], '?', 4), getCopiesWithSeperator(splitLine[1], ',', 4)));
+    }
+    return conditionRecords;
+}
+
+function getCopiesWithSeperator(stringToCopy, seperator, numberOfCopies) {
+    let result = stringToCopy;
+    for(let i = 0; i < numberOfCopies; i++) {
+        result = result.concat(seperator, stringToCopy);
+    }
+    return result;
+}
 
 class ConditionRecord {
     constructor(symbolFormat, numberFormat) {
@@ -99,12 +99,12 @@ class ConditionRecord {
             
             if (nextNumber) {
                 if (currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex + 1]) {
+                    currentNumber.currentCoordinateSetIndex++;
                     if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
                         reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
                     }
-                    currentNumber.currentCoordinateSetIndex++;
                     
-                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat, '$');
+                    let newlyUpdatedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.currentCoordinateSetIndex], currentNumberFormat);
                     if (newlyUpdatedSymbolRow) {
                         checkpointSymbolRow = newlyUpdatedSymbolRow.map(value => value);
                         currentNumberIndex++;
@@ -115,17 +115,21 @@ class ConditionRecord {
                     currentNumberIndex--;
                     currentNumber.currentCoordinateSetIndex = -1;
                     currentlyUsedNumbers.pop();
+                    if (currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]) {
+                        reverseChangesAtCoordinates(checkpointSymbolRow, currentNumber.coordinateSets[currentNumber.lastUsedCoordinateIndex]);
+                    }
+                    currentNumber.lastUsedCoordinateIndex = null;
                 }
             }
             else {
                 for(const coordinateSet of currentNumber.coordinateSets) {
-                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat, '$');
+                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat);
                     if (completedSymbolRow) {
-                        completedSymbolRow = completedSymbolRow.join('');
+                        completedSymbolRow = completedSymbolRow.join('').replaceAll('$', '#');
                         if (!variations.find(value => value === completedSymbolRow)) {
-                            //  if (symbolRowVariationIsValid(completedSymbolRow, this.numberFormat)) {
+                             if (finalSymbolRowValidation(completedSymbolRow, this.numberFormat)) {
                                 variations.push(completedSymbolRow);
-                            //  }
+                             }
                         }
                     }  
                 }
@@ -148,7 +152,7 @@ function getNumberFormatForNumbers(numbers) {
 }
 
 //TODO last change modified the functions to be ambigous to # and $, problem is, im only using the $ version -> at the very end, there needs to be one last check -> invert the $ symbols back to # and run the final validation against #
-function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst, symbol) {
+function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst) {
     let localSymbolRow = symbolRow.map(value => value);
     if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#') && (localSymbolRow[coordinateSet.startIndex - 1] !== '$') && (localSymbolRow[coordinateSet.endIndex + 1] !== '$')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
@@ -156,22 +160,26 @@ function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToVali
                 localSymbolRow.splice(i, 1, '$');
             } else { return undefined; }
         }
-        if (symbolRowVariationIsValid(localSymbolRow.join(''), numberFormatToValidateAgainst, symbol)) {
+        if (symbolVariationValidSoFar(localSymbolRow.join(''), numberFormatToValidateAgainst)) {
             return localSymbolRow;
         }
     }
     return undefined;
 }
 
-function symbolRowVariationIsValid(symbolRowToValidate, numberFormatToValidateAgainst, symbol) {
-    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate, symbol));
+function finalSymbolRowValidation(symbolRowToValidate, numberFormatToValidateAgainst) {
+    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate, '#'));
 }
 
-function getNumbersFormat(string, symbol) {
+function symbolVariationValidSoFar(symbolRowToValidate, numberFormatToValidateAgainst) {
+    return (numberFormatToValidateAgainst === getNumbersFormat(symbolRowToValidate, '$'));
+}
+
+function getNumbersFormat(string, symbolToLookFor) {
     let numbers = [];
     for(let position = 0; position < string.length; position++) {
-        if (isSymbol(string[position], symbol)) {
-            let number = getNumber(string, position, symbol);
+        if (isSymbolToLookFor(string[position], symbolToLookFor)) {
+            let number = getNumber(string, position, symbolToLookFor);
             numbers.push(number);
             position += number;
         }
@@ -179,16 +187,16 @@ function getNumbersFormat(string, symbol) {
     return numbers.join(',');
 }
 
-function getNumber(str, position, symbol) {
+function getNumber(str, position, symbolToLookFor) {
     let result = 0;
-    for(let i = position; isSymbol(str[i], symbol); i++) {
+    for(let i = position; isSymbolToLookFor(str[i], symbolToLookFor); i++) {
         result ++;
     }
     return result;
 }
 
-function isSymbol(char, symbol) {
-    return (char === symbol);
+function isSymbolToLookFor(char, symbolToLookFor) {
+    return (char === symbolToLookFor);
 }
 
 function reverseChangesAtCoordinates(symbolRow, coordinateSet) {
