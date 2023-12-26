@@ -119,7 +119,7 @@ class ConditionRecord {
             }
             else {
                 for(const coordinateSet of currentNumber.coordinateSets) {
-                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat, '#');
+                    let completedSymbolRow = tryHashtagingAtCoordinates(checkpointSymbolRow, coordinateSet, currentNumberFormat, '$');
                     if (completedSymbolRow) {
                         completedSymbolRow = completedSymbolRow.join('');
                         if (!variations.find(value => value === completedSymbolRow)) {
@@ -147,9 +147,10 @@ function getNumberFormatForNumbers(numbers) {
     return numberFormat;
 }
 
+//TODO last change modified the functions to be ambigous to # and $, problem is, im only using the $ version -> at the very end, there needs to be one last check -> invert the $ symbols back to # and run the final validation against #
 function tryHashtagingAtCoordinates(symbolRow, coordinateSet, numberFormatToValidateAgainst, symbol) {
     let localSymbolRow = symbolRow.map(value => value);
-    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#')) {
+    if ((localSymbolRow[coordinateSet.startIndex - 1] !== '#') && (localSymbolRow[coordinateSet.endIndex + 1] !== '#') && (localSymbolRow[coordinateSet.startIndex - 1] !== '$') && (localSymbolRow[coordinateSet.endIndex + 1] !== '$')) {
         for(let i = coordinateSet.startIndex; i <= coordinateSet.endIndex; i++) {
             if (localSymbolRow[i] !== '.') {
                 localSymbolRow.splice(i, 1, '$');
@@ -170,7 +171,7 @@ function getNumbersFormat(string, symbol) {
     let numbers = [];
     for(let position = 0; position < string.length; position++) {
         if (isSymbol(string[position], symbol)) {
-            let number = getNumber(string, position);
+            let number = getNumber(string, position, symbol);
             numbers.push(number);
             position += number;
         }
