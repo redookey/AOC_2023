@@ -38,10 +38,47 @@ function solvePuzzle(blocks) {
 class Block {
     constructor(rawLines) {
         this.rawLines = rawLines;
-        this.horizontalLineValues = this.getHorizontalLineValues();
-        this.verticalLineValues = this.getVerticalLineValues();
+        this.horizontalLinesValues = this.getLineValues(this.rawLines);
+        this.verticalLinesValues = this.getLineValues(rotateLines(this.rawLines));
     }
-    getHorizontalLineValues() {
-        
+    getLineValues(rawLines) {
+        let valueLines = [];
+        for(const rawLine of rawLines) {
+            let binaryValue = 2;
+             for(const char of rawLine) {
+                let lineValue = 0;
+                if (char === '#') { lineValue += binaryValue; }
+                binaryValue *= 2;
+             }
+            valueLines.push(lineValue);
+        }
+        return valueLines;
     }
+    // getLineValues(rawLines) {
+    //     let valueLines = [];
+    //     for(const rawLine of rawLines) {
+    //         let coeficient = 2;
+    //          for(const char of rawLine) {
+    //             let valueLine = [];
+    //             char === '#' ? valueLine.push(coeficient) : valueLine.push(0); 
+    //             coeficient *= 2;
+    //          }
+    //         valueLines.push(valueLine);
+    //     }
+    //     return valueLines;
+    // }
+}
+
+function rotateLines(lines) {
+    let rotatedLines = [];
+    const lineLength = lines[0].length;
+    
+    for(let i = 0; i < lineLength; i++) {
+        let rotatedLine = '';
+        for(const line of lines) {
+            rotatedLine += line[i];
+        }
+        rotatedLines.push(rotatedLine);
+    }
+    return rotatedLines;
 }
