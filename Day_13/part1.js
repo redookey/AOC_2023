@@ -1,4 +1,4 @@
-//i can translate the rows to binary
+//i can translate the rows to bit
 //.#.#..#
 //2.4.8.16.32.64.128 
 //4 + 16 + 128 = 148
@@ -26,7 +26,7 @@ function extractBlocksFromFile(fileName) {
 
 function main() {
     const start = Date.now();
-    console.log(solvePuzzle(extractBlocksFromFile('testInput.txt')));
+    console.log(solvePuzzle(extractBlocksFromFile('input.txt')));
     const end = Date.now();
     console.log(`start: ${start}\nend: ${end}`);
 }
@@ -46,43 +46,48 @@ class Block {
     constructor(rawLines) {
         this.rawLines = rawLines;
         this.horizontalLinesValues = this.getLineValues(this.rawLines);
-        this.verticalLinesValues = this.getLineValues(rotateLines(this.rawLines));
-        this.numberOfLeftSideLines = this.scanForMirroring(this.horizontalLinesValues);
-        this.numberOfAboveLines = this.scanForMirroring(this.verticalLinesValues);  //not sure its that easy, is the rotation working correctly for this case?
-
+        this.numberOfAboveLines = this.scanForMirroring(this.horizontalLinesValues);
+        if(!this.numberOfAboveLines) {
+            this.verticalLinesValues = this.getLineValues(rotateLines(this.rawLines)); //not sure its that easy, is the rotation working correctly for this case?
+            this.numberOfLeftSideLines = this.scanForMirroring(this.verticalLinesValues);
+        } else {
+            this.numberOfLeftSideLines = 0;
+        }
     }
     getLineValues(rawLines) {
         let valueLines = [];
         for(const rawLine of rawLines) {
-            let binaryValue = 2;
+            let bitValue = 2;
+            let lineValue = 0;
             for(const char of rawLine) {
-                let lineValue = 0;  //put a level up?
-                if (char === '#') { lineValue += binaryValue; }
-                binaryValue *= 2;
+                if (char === '#') { lineValue += bitValue; }
+                bitValue *= 2;
             }
             valueLines.push(lineValue);
         }
         return valueLines;
     }
     scanForMirroring(lineValues) {
+        let previousValue = null;
         for (let i = 0; i < lineValues.length; i++) {
             if (lineValues[i] === previousValue) {
-                if (confirmMirroring(i - 0.5)) {
+                if (this.confirmMirroring(lineValues, i - 0.5)) {
                     return i; //would be -1, but zero indexing
                 }
             }
-            let previousValue = value;
+            previousValue = lineValues[i];
         }
         return 0;
     }
     confirmMirroring(lineValues, mirrorLocation) {
         let leftSideIndex = Math.floor(mirrorLocation);
         let rightSideIndex = Math.ceil(mirrorLocation);
-        let i = 0;
+        let i = 1;
         
-        while(lineValues[leftSideIndex - i] !== -1 && lineValues[rightSideIndex + i] !== -1) {
-            i++;
+        while(lineValues[leftSideIndex - i] && lineValues[rightSideIndex + i]) {
+            let test = lineValues[rightSideIndex + i];
             if (lineValues[leftSideIndex - i] !== lineValues[rightSideIndex + i]) { return false; }
+            i++;
         }
         return true;
     }
